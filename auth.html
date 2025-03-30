@@ -1,25 +1,62 @@
-<script src="/env.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="/supabaseClient.js"></script>
-<script>
-  document.getElementById("status").innerText = "Checking session...";
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      localStorage.setItem("user_id", session.user.id);
-      document.getElementById("status").innerText = "Login successful! Redirecting...";
-      window.location.href = "/dashboard.html";
-    } else {
-      document.getElementById("status").innerText = "Authentication failed. Please try logging in again.";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Authenticating...</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f7f7f7;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-  });
-
-  // Fallback in case the above doesn't fire
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      localStorage.setItem("user_id", session.user.id);
-      document.getElementById("status").innerText = "Login successful! Redirecting...";
-      window.location.href = "/dashboard.html";
+    .status-box {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+      font-size: 1.2rem;
     }
-  });
-</script>
+  </style>
+</head>
+<body>
+  <div class="status-box" id="status">Authenticating...</div>
+
+  <script src="/env.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="/supabaseClient.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const status = document.getElementById("status");
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Session:", session);
+
+        if (session) {
+          localStorage.setItem("user_id", session.user.id);
+          status.innerText = "Login successful! Redirecting...";
+          window.location.href = "/dashboard.html";
+        } else {
+          // Fallback in case session is not ready but user is available
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            localStorage.setItem("user_id", user.id);
+            status.innerText = "Login successful! Redirecting...";
+            window.location.href = "/dashboard.html";
+          } else {
+            status.innerText = "Authentication failed. Please try logging in again.";
+          }
+        }
+      } catch (err) {
+        console.error("Authentication error:", err);
+        status.innerText = "Something went wrong. Please refresh or try again.";
+      }
+    });
+  </script>
+</body>
+</html>
