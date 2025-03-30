@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Claim QR Code | QubR</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="/env.js"></script>
+<link href="style.css" rel="stylesheet"/></head>
+<body><div id="header"></div>
+<h1>QubR QR Claim</h1>
+<div id="loading">Checking QR code...</div>
+<div id="login">
+<p>This QR code is unclaimed. Please log in with Google to register it.</p>
+<button onclick="login()">Login with Google</button>
+</div>
+<div id="form">
+<p>You’re about to claim this QR code!</p>
+<label>Where did you place this QR code?<input id="location" type="text"/></label>
+<label>What URL should this QR code redirect to?<input id="redirect_url" type="url"/></label>
+<button onclick="claimQRCode()">Register QR Code</button>
+</div>
+<div id="thankyou">
+<h2>🎉 Thank you!</h2>
+<p>Your QR code has been registered successfully.</p>
+</div>
+<div id="logout-box">
+<button onclick="logout()">Log out</button>
+</div>
+<script src="scan.js"></script><script src="/supabaseClient.js"></script><script src="/header.js"></script></body>
+</html>

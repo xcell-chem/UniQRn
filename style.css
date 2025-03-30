@@ -1,0 +1,242 @@
+/* General Styles */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #03192c;
+  color: midnightblue;
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.center {
+  text-align: center;
+}
+
+/* Typography */
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: gold;
+}
+
+p {
+  max-width: 600px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+/* Form Styles */
+form {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+}
+
+input,
+textarea,
+select,
+button {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+button {
+  margin-top: 1.5rem;
+  background: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #0072d0;
+}
+
+/* QR Preview Container */
+#qrcode-preview-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.qr-block {
+  text-align: center;
+  background: #fefefe;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 140px;
+}
+
+.qr-id {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+header img {
+  height: 60px;
+}
+
+header h1 {
+  flex-grow: 1;
+  text-align: center;
+  margin: 0;
+}
+
+header .nav {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Balances */
+#balances {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Search Input */
+#search {
+  padding: 0.5rem;
+  width: 300px;
+  margin-bottom: 1rem;
+}
+
+/* Folder Structure */
+.folder {
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.folder-header {
+  background: #e9ecef;
+  padding: 0.75rem;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.folder-content {
+  display: block;
+  padding: 1rem;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+th,
+td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+th {
+  background-color: #f1f3f5;
+}
+
+.export-btn {
+  font-size: 0.85rem;
+}
+
+/* Buttons / Links Group */
+.buttons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.buttons a {
+  background-color: #00adb5;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.buttons a:hover {
+  background-color: #007b80;
+}
+
+/* Conditional Visibility */
+#form,
+#login,
+#loading,
+#thankyou,
+#logout-box {
+  display: none;
+}
+
+
+/* === Custom Styling Updates === */
+
+/* Homepage Text */
+.homepage-text {
+  color: gold;
+  text-align: center;
+}
+
+/* Table Background */
+table {
+  background-color: #f8f9fa;
+}
+
+th {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+td {
+  background-color: #fcfcfc;
+}
+
+/* Header and Coin Balances */
+header, #balances {
+  color: gold;
+}
+
+/* Coin balance box (optional custom style) */
+#balances {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
