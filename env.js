@@ -1,2 +1,2 @@
-window.SUPABASE_URL="https://catlvxqphrmicnjzbyal.supabase.co";
+window.SUPABASE_URL="https://uniqrn.co.uk.supabase.co";
 window.SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhdGx2eHFwaHJtaWNuanpieWFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNDI4ODUsImV4cCI6MjA1ODcxODg4NX0.dWklF5cfC-0Jjgy5pOZaHfT4keZMdYQwhOo-q_f4FE4";
