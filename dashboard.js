@@ -161,7 +161,8 @@ const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABA
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-       redirectTo: 'https://uniqrn.co.uk/auth/v1/callback'
+        redirectTo: "https://uniqrn.co.uk/auth.html"
+
       }
     });
   }

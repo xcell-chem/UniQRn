@@ -1,0 +1,14 @@
+<script src="/env.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="/supabaseClient.js"></script>
+<script>
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      localStorage.setItem("user_id", session.user.id);
+      window.location.href = "/dashboard.html";
+    } else {
+      // Maybe show a retry button or log an error
+      document.body.innerText = "Authentication failed. Please try logging in again.";
+    }
+  });
+</script>
