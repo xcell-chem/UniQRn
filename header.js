@@ -2,7 +2,7 @@
 async function loadHeader() {
   const headerHTML = `
     <header>
-      <img src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg" alt="QubR Logo" class="logo">
+      <img src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//logo.png" alt="UniQRn Logo" class="logo">
       <div id="balances">Loading balances...</div>
       <div class="nav">
         <a href="index.html">🏠 Home</a>
