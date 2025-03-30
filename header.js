@@ -12,8 +12,8 @@ async function loadHeader() {
   `;
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
-  const supabaseUrl = 'https://catlvxqphrmicnjzbyal.supabase.co';
-  const supabaseKey = 'YOUR_PUBLIC_SUPABASE_KEY'; // Replace with your actual public key
+  const supabaseUrl = window.SUPABASE_URL;
+  const supabaseKey = window.SUPABASE_KEY;
   const userId = localStorage.getItem('user_id'); // Ensure this is set on login
 
   const { createClient } = supabase;
