@@ -1,14 +1,47 @@
-<script src="/env.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="/supabaseClient.js"></script>
-<script>
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      localStorage.setItem("user_id", session.user.id);
-      window.location.href = "/dashboard.html";
-    } else {
-      // Maybe show a retry button or log an error
-      document.body.innerText = "Authentication failed. Please try logging in again.";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Logging In...</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8f8f8;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-  });
-</script>
+    .message {
+      padding: 1rem 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="message" id="status">Authenticating...</div>
+
+  <script src="/env.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="/supabaseClient.js"></script>
+  <script>
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        localStorage.setItem("user_id", session.user.id);
+        document.getElementById("status").innerText = "Login successful! Redirecting...";
+        window.location.href = "/dashboard.html";
+      } else {
+        document.getElementById("status").innerText = "Authentication failed. Please try logging in again.";
+      }
+    }).catch((error) => {
+      console.error("Auth error:", error);
+      document.getElementById("status").innerText = "Something went wrong. Try again.";
+    });
+  </script>
+</body>
+</html>
