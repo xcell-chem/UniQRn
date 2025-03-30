@@ -1,4 +1,3 @@
-
 async function loadHeader() {
   const headerHTML = `
     <header>
@@ -14,14 +13,19 @@ async function loadHeader() {
 
   const supabaseUrl = window.SUPABASE_URL;
   const supabaseKey = window.SUPABASE_KEY;
-  const userId = localStorage.getItem('user_id'); // Ensure this is set on login
+  const userId = localStorage.getItem('user_id');
+
+  if (!userId) {
+    document.getElementById('balances').innerText = '💰 Please log in to see balances';
+    return;
+  }
 
   const { createClient } = supabase;
   const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
   const { data, error } = await supabaseClient
-    .from('users')
-    .select('coins, free_prints, purchased_prints')
+    .from('app_users')
+    .select('coin_balance, free_credits, purchased_credits')
     .eq('id', userId)
     .single();
 
@@ -29,15 +33,9 @@ async function loadHeader() {
     document.getElementById('balances').innerText = '💰 Unable to load balances';
   } else {
     document.getElementById('balances').innerHTML = `
-      💰 Coins: <span id="coin-balance">${data.coins}</span> |
-      🖨 Free credits: <span id="free-print-balance">${data.free_prints}</span> |
-      Purchased: <span id="purchased-print-balance">${data.purchased_prints}</span>
+      💰 Coins: <span id="coin-balance">${data.coin_balance}</span> |
+      🖨 Free credits: <span id="free-print-balance">${data.free_credits}</span> |
+      Purchased: <span id="purchased-print-balance">${data.purchased_credits}</span>
     `;
   }
 }
-
-function logout() {
-  alert('Logged out!');
-}
-
-document.addEventListener('DOMContentLoaded', loadHeader);
