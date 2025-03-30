@@ -24,7 +24,7 @@ form.addEventListener("submit", async (e) => {
 
   for (let i = 0; i < qty; i++) {
     const id = crypto.randomUUID();
-    const fullURL = `https://superlative-creponne-0f6c7f.netlify.app/?id=${id}`;
+    const fullURL = `https://UniQRn.co.uk/?id=${id}`;
 
     const canvas = document.createElement("canvas");
     await QRCode.toCanvas(canvas, fullURL, { width: 120 });
