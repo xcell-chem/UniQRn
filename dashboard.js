@@ -157,11 +157,12 @@ const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABA
     await supabase.auth.signOut();
     window.location.reload();
   }
-
   async function login() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.href }
+      options: {
+        redirectTo: window.location.origin + "/auth/v1/callback"
+      }
     });
   }
 
