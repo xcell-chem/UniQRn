@@ -1,20 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>QR Registration</title>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Claim QR Code | UniQRn</title>
+  <link href="style.css" rel="stylesheet"/>
+  <link rel="icon" href="/favicon.ico" />
   <script src="/env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="/supabaseClient.js"></script>
-  <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
-  <h1>Register QR Code</h1>
-  <div id="loading" style="display:none;">Loading...</div>
-  <div id="login" style="display:none;">Login prompt here</div>
-  <div id="form" style="display:none;">QR registration form here</div>
-  <div id="thankyou" style="display:none;">Thank you!</div>
-  <div id="logout-box" style="display:none;">Logout here</div>
-  <script src="/scan.js"></script>
+  <div id="header"></div>
+  <h1>QR Registration</h1>
+
+  <!-- ✅ Ensure this exists for JS to access -->
+  <div id="loading" style="display:none;">Checking QR code...</div>
+
+  <div id="login" style="display:none;">
+    <p>This QR code is unregistered. Please log in with Google to register it.</p>
+    <button onclick="login()">Login with Google</button>
+  </div>
+
+  <div id="form" style="display:none;">
+    <p>You’re about to claim this QR code!</p>
+    <label>Where did you place this QR code?<input id="location" type="text"/></label>
+    <label>What URL should this QR code redirect to?<input id="redirect_url" type="url"/></label>
+    <label>Group/Folder:<input id="label" type="text" placeholder="e.g. ads/mirrors"/></label>
+    <label>Optional Note:<input id="custom_1" type="text" placeholder="e.g. Campaign name"/></label>
+    <label><input type="checkbox" id="active" checked/> Mark QR as active</label>
+    <label><input type="checkbox" id="single_use"/> Make single-use only</label>
+    <button onclick="claimQRCode()">Register QR Code</button>
+  </div>
+
+  <div id="thankyou" style="display:none;">
+    <h2>🎉 Thank you!</h2>
+    <p>Your QR code has been registered successfully.</p>
+  </div>
+
+  <div id="logout-box" style="display:none;">
+    <button onclick="logout()">Log out</button>
+  </div>
+
+  <!-- ✅ Scripts last to ensure DOM is ready -->
+  <script src="scan.js"></script>
+  <script src="/header.js"></script>
 </body>
 </html>
