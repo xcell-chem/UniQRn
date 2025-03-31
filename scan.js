@@ -69,6 +69,10 @@ async function login() {
 async function claimQRCode() {
   const location = document.getElementById("location").value.trim();
   let redirect = document.getElementById("redirect_url").value.trim();
+  const label = document.getElementById("label").value.trim();
+  const custom_1 = document.getElementById("custom_1").value.trim();
+  const is_active = document.getElementById("is_active").checked;
+  const single_use = document.getElementById("single_use").checked;
 
   if (!redirect.startsWith("http")) redirect = "https://" + redirect;
   if (!location || !redirect || !user?.id) {
@@ -108,7 +112,11 @@ async function claimQRCode() {
     owner_id: user.id,
     shared_location: location,
     redirect_url: redirect,
-    registered: true
+    registered: true,
+    label,
+    custom_1,
+    is_active,
+    single_use
   });
 
   if (qrInsertError) {
