@@ -71,7 +71,7 @@ async function claimQRCode() {
   let redirect = document.getElementById("redirect_url").value.trim();
   const label = document.getElementById("label").value.trim();
   const custom_1 = document.getElementById("custom_1").value.trim();
-  const active = document.getElementById("active").checked;
+  const is_active = document.getElementById("active").checked;
   const single_use = document.getElementById("single_use").checked;
 
   if (!redirect.startsWith("http")) redirect = "https://" + redirect;
@@ -115,7 +115,7 @@ async function claimQRCode() {
     registered: true,
     label,
     custom_1,
-    active,
+    is_active,
     single_use
   });
 
