@@ -10,17 +10,16 @@
 </head>
 <body>
   <p>Completing login…</p>
+
   <script>
     const next = new URLSearchParams(window.location.search).get("next") || "/dashboard.html";
 
     document.addEventListener("DOMContentLoaded", async () => {
-      if (!window.supabase) {
-        document.body.innerText = "Supabase client not loaded.";
-        return;
-      }
-
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // ✅ Ensures proper session handoff after OAuth login
+        await window.supabase.auth.exchangeCodeForSession();
+
+        const { data: { session } } = await window.supabase.auth.getSession();
 
         if (session?.user) {
           localStorage.setItem("user_id", session.user.id);
@@ -29,8 +28,8 @@
           document.body.innerText = "Authentication failed. Please try logging in again.";
         }
       } catch (error) {
-        console.error("Auth error:", error);
-        document.body.innerText = "Authentication error. Please try again.";
+        console.error("OAuth session exchange failed:", error);
+        document.body.innerText = "Login error. Please try again.";
       }
     });
   </script>
