@@ -1,4 +1,4 @@
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+const supabase = window.supabase;
 const qrId = new URLSearchParams(window.location.search).get("id");
 
 const loginBox = document.getElementById("login");
