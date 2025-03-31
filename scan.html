@@ -4,9 +4,10 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Claim QR Code | UniQRn</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="/env.js"></script>
   <link href="style.css" rel="stylesheet"/>
+  <script src="/env.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="/supabaseClient.js"></script>
 </head>
 <body>
   <div id="header"></div>
@@ -24,7 +25,7 @@
     <label>What URL should this QR code redirect to?<input id="redirect_url" type="url"/></label>
     <label>Group/Folder:<input id="label" type="text" placeholder="e.g. ads/mirrors"/></label>
     <label>Optional Note:<input id="custom_1" type="text" placeholder="e.g. Campaign name"/></label>
-    <label><input type="checkbox" id="is_active" checked/> Mark QR as active</label>
+    <label><input type="checkbox" id="active" checked/> Mark QR as active</label>
     <label><input type="checkbox" id="single_use"/> Make single-use only</label>
     <button onclick="claimQRCode()">Register QR Code</button>
   </div>
@@ -39,7 +40,6 @@
   </div>
 
   <script src="scan.js"></script>
-  <script src="/supabaseClient.js"></script>
   <script src="/header.js"></script>
 </body>
 </html>

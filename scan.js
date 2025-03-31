@@ -1,4 +1,3 @@
-
 const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 const qrId = new URLSearchParams(window.location.search).get("id");
 
@@ -60,9 +59,7 @@ async function login() {
 
   await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      redirectTo: redirectUrl
-    }
+    options: { redirectTo: redirectUrl }
   });
 }
 
@@ -71,29 +68,13 @@ async function claimQRCode() {
   let redirect = document.getElementById("redirect_url").value.trim();
   const label = document.getElementById("label").value.trim();
   const custom_1 = document.getElementById("custom_1").value.trim();
-  const is_active = document.getElementById("active").checked;
+  const active = document.getElementById("active").checked;
   const single_use = document.getElementById("single_use").checked;
 
   if (!redirect.startsWith("http")) redirect = "https://" + redirect;
   if (!location || !redirect || !user?.id) {
     alert("Please log in and fill all fields.");
     return;
-  }
-
-  const referred_by = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("referred_by_id="))
-    ?.split("=")[1];
-
-  await supabase.from("app_users").insert({
-    id: user.id,
-    email: user.email,
-    parent_id: referred_by || null,
-    coin_balance: 250
-  }, { onConflict: "id", ignoreDuplicates: true });
-
-  if (referred_by) {
-    await supabase.rpc("add_referral_rewards", { new_user_id: user.id });
   }
 
   const { data: checkQR } = await supabase
@@ -115,7 +96,7 @@ async function claimQRCode() {
     registered: true,
     label,
     custom_1,
-    is_active,
+    active,
     single_use
   });
 
