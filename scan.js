@@ -1,4 +1,3 @@
-const supabase = window.supabase;
 const qrId = new URLSearchParams(window.location.search).get("id");
 
 const loginBox = document.getElementById("login");
@@ -11,7 +10,7 @@ let user = null;
 async function checkQRCode() {
   loading.style.display = "block";
 
-  const { data: qrData } = await supabase
+  const { data: qrData } = await window.supabase
     .from("qr_codes")
     .select("*")
     .eq("id", qrId)
@@ -19,12 +18,12 @@ async function checkQRCode() {
 
   const qr = qrData?.[0];
 
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData } = await window.supabase.auth.getSession();
   user = sessionData?.session?.user;
 
   if (qr?.owner_id && qr?.redirect_url) {
     if (user?.id) {
-      await supabase.from("scan_events").insert({ qr_id: qrId, user_id: user.id });
+      await window.supabase.from("scan_events").insert({ qr_id: qrId, user_id: user.id });
     }
 
     let redirectTo = qr.redirect_url;
@@ -34,9 +33,9 @@ async function checkQRCode() {
   }
 
   if (!user) {
-    const { data: userData, error } = await supabase.auth.getUser();
+    const { data: userData, error } = await window.supabase.auth.getUser();
     if (error?.message === "User from sub claim in JWT does not exist") {
-      await supabase.auth.signOut();
+      await window.supabase.auth.signOut();
       location.reload();
       return;
     }
@@ -54,18 +53,14 @@ async function checkQRCode() {
 }
 
 async function login() {
-  const next = window.location.pathname + window.location.search;
-  const redirectTo = `${window.location.origin}/auth.html?next=${encodeURIComponent(next)}`;
+  const currentPath = window.location.pathname + window.location.search;
+  const redirectUrl = window.location.origin + '/auth.html?next=' + encodeURIComponent(currentPath);
 
-  await supabase.auth.signInWithOAuth({
+  await window.supabase.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      redirectTo
-    }
+    options: { redirectTo: redirectUrl }
   });
 }
-
-
 
 async function claimQRCode() {
   const location = document.getElementById("location").value.trim();
@@ -81,7 +76,7 @@ async function claimQRCode() {
     return;
   }
 
-  const { data: checkQR } = await supabase
+  const { data: checkQR } = await window.supabase
     .from("qr_codes")
     .select("id")
     .eq("id", qrId)
@@ -92,7 +87,7 @@ async function claimQRCode() {
     return;
   }
 
-  const { error: qrInsertError } = await supabase.from("qr_codes").insert({
+  const { error: qrInsertError } = await window.supabase.from("qr_codes").insert({
     id: qrId,
     owner_id: user.id,
     shared_location: location,
@@ -115,8 +110,8 @@ async function claimQRCode() {
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await window.supabase.auth.signOut();
   window.location.reload();
 }
 
-checkQRCode();
+document.addEventListener("DOMContentLoaded", () => checkQRCode());
