@@ -54,16 +54,17 @@ async function checkQRCode() {
 }
 
 async function login() {
-  const currentPath = window.location.pathname + window.location.search;
-  const redirectUrl = `${window.location.origin}/auth.html?next=${encodeURIComponent(currentPath)}`;
+  const next = window.location.pathname + window.location.search;
+  const redirectTo = `${window.location.origin}/auth.html?next=${encodeURIComponent(next)}`;
 
   await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: redirectUrl
+      redirectTo
     }
   });
 }
+
 
 
 async function claimQRCode() {

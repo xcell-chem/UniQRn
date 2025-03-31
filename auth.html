@@ -13,7 +13,6 @@
   <script>
     const next = new URLSearchParams(window.location.search).get("next") || "/dashboard.html";
 
-    // Wait until Supabase is available
     document.addEventListener("DOMContentLoaded", async () => {
       if (!window.supabase) {
         document.body.innerText = "Supabase client not loaded.";
