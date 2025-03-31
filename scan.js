@@ -8,7 +8,7 @@ const thankyou = document.getElementById("thankyou");
 let user = null;
 
 async function checkQRCode() {
-  loading.style.display = "block";
+  if (loading) loading.style.display = "block";
 
   const { data: qrData } = await window.supabase
     .from("qr_codes")
