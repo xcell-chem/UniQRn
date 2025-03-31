@@ -65,7 +65,7 @@ const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABA
     let redirect = document.getElementById("redirect_url").value.trim();
     const label = document.getElementById("label").value.trim();
     const custom_1 = document.getElementById("custom_1").value.trim();
-    const is_active = document.getElementById("is_active").checked;
+    const active = document.getElementById("is_active").checked;  // renamed variable
     const single_use = document.getElementById("single_use").checked;
   
     if (!redirect.startsWith("http")) redirect = "https://" + redirect;
@@ -98,8 +98,8 @@ const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABA
       registered: true,
       label,
       custom_1,
-      is_active,
-      single_use,
+      active,       // ✅ renamed from is_active
+      single_use,   // ✅ retained
       referred_by_id: referred_by
     });
   
@@ -112,6 +112,7 @@ const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABA
     formBox.style.display = "none";
     thankyou.style.display = "block";
   }
+  
   
   
   
