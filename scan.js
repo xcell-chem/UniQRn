@@ -54,12 +54,14 @@ async function checkQRCode() {
 
 async function login() {
   const next = window.location.pathname + window.location.search;
-  const redirectTo = `${window.location.origin}/auth.html?next=${encodeURIComponent(next)}`;
+  const redirectUrl = `${window.location.origin}/auth.html?next=${encodeURIComponent(next)}`;
+
+  console.log("Redirecting to:", redirectUrl); // ✅ Add this for debug
 
   await window.supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-       redirectTo: redirectTo  // ✅ this must point back to your own domain
+      redirectTo: redirectUrl // ✅ Explicit assignment required
     }
   });
 }
