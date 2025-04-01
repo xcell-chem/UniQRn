@@ -59,7 +59,7 @@ async function login() {
   await window.supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo  // ✅ this must point back to your own domain
+       redirectTo: redirectTo  // ✅ this must point back to your own domain
     }
   });
 }
