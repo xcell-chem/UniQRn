@@ -65,7 +65,7 @@ async function loadDashboard() {
     const { data: events, error: eventsError } = await supabase
       .from("scan_events")
       .select("referred_signup, scanned_at, ip_address, device_info")
-      .eq("qr_code_id", qr.id);
+      .eq("qr_id", qr.id);
 
     if (eventsError) {
       console.error(`[dashboard.js] Error loading scan events for ${qr.id}:`, eventsError);

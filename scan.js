@@ -57,7 +57,7 @@ async function recordScan(qrCodeId, geotag, deviceInfo, ipAddress) {
   const { error: insertError } = await window.supabaseClient
     .from("scan_events")
     .insert([{ 
-      qr_code_id: qrCodeId, 
+      qr_id: qrCodeId, 
       ip_address: ipAddress || null, 
       device_info: deviceInfo || null,
       location: geotag ? JSON.stringify(geotag) : null 
