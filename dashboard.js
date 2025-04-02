@@ -251,3 +251,6 @@ async function login() {
 // Attach search event listener and load dashboard on startup
 document.getElementById("search").addEventListener("input", filterFolders);
 loadDashboard();
+// Expose login and logout functions to the global scope for inline event handlers
+window.login = login;
+window.logout = logout;
