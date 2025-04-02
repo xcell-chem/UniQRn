@@ -1,171 +1,79 @@
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-  let user = null;
-  let allCodes = [];
+// dashboard.js
 
-  async function loadDashboard() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    user = sessionData?.session?.user;
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[dashboard.js] Dashboard loaded.');
 
-    if (!user) {
-      const { data: userData } = await supabase.auth.getUser();
-      user = userData?.user;
-    }
+  // Get current user from Supabase authentication
+  const user = supabase.auth.user();
+  if (!user) {
+    console.error('[dashboard.js] No user logged in.');
+    return;
+  }
+  const userId = user.id;
+  console.log('[dashboard.js] Current user id:', userId);
 
-    if (!user) {
-      document.body.innerHTML = `<h2>🔐 Please log in to access your dashboard.</h2><button onclick="login()">Login with Google</button>`;
-      return;
-    }
+  // 1. Fetch Affiliate Codes:
+  // These are codes where the user is the owner (registered) but not the creator.
+  let { data: affiliateCodes, error: errorAffiliate } = await supabase
+    .from('qr_codes')
+    .select('*')
+    .eq('owner_id', userId)
+    .neq('created_by', userId);
 
-    console.log("🔑 Logged in as:", user.email);
-
-    const [{ data: qrCodes, error }, { data: userInfo }] = await Promise.all([
-      supabase.from("qr_codes").select("*").eq("owner_id", user.id),
-      supabase.from("app_users").select("coin_balance, free_credits, purchased_credits").eq("id", user.id).single()
-    ]);
-
-    if (error || !Array.isArray(qrCodes)) {
-      console.error("❌ Failed to load QR codes:", error);
-      alert("Unable to load QR codes.");
-      return;
-    }
-
-    document.getElementById("balances").innerText =
-      `💰 Coins: ${userInfo?.coin_balance || 0} | 🖨️ Free credits: ${userInfo?.free_credits || 0} | Purchased: ${userInfo?.purchased_credits || 0}`;
-
-    console.log(`📦 Loaded ${qrCodes.length} QR codes.`);
-    console.log("📦 QR Code Data:", qrCodes);
-
-    allCodes = [];
-
-    for (const qr of qrCodes) {
-      const { data: events } = await supabase
-        .from("scan_events")
-        .select("referred_signup")
-        .eq("qr_id", qr.id);
-
-      allCodes.push({
-        ...qr,
-        scans: events?.length || 0,
-        referrals: events?.filter(e => e.referred_signup).length || 0
-      });
-    }
-
-    const tree = buildFolderTree(allCodes);
-    console.log("🗂️ Folder Tree Structure:", tree);
-    renderFolderTree(tree, document.getElementById("folders"));
+  if (errorAffiliate) {
+    console.error('[dashboard.js] Error fetching affiliate codes:', errorAffiliate);
+  } else {
+    console.log('[dashboard.js] Affiliate codes:', affiliateCodes);
+    renderCodes('affiliate-codes', affiliateCodes);
   }
 
-  function buildFolderTree(codes) {
-    const root = {};
+  // 2. Fetch My Codes:
+  // These are codes created by the user.
+  let { data: myCodes, error: errorMyCodes } = await supabase
+    .from('qr_codes')
+    .select('*')
+    .eq('created_by', userId);
 
-    for (const qr of codes) {
-      const labelPath = (qr.label || "Unlabeled").split("/").map(s => s.trim());
-      let node = root;
-
-      for (let i = 0; i < labelPath.length; i++) {
-        const part = labelPath[i] || "Unlabeled";
-        if (!node[part]) node[part] = { __codes: [], __subfolders: {} };
-
-        if (i === labelPath.length - 1) {
-          node[part].__codes.push(qr);
-        } else {
-          node = node[part].__subfolders;
-        }
-      }
-    }
-
-    return root;
+  if (errorMyCodes) {
+    console.error('[dashboard.js] Error fetching my codes:', errorMyCodes);
+  } else {
+    console.log('[dashboard.js] My codes:', myCodes);
+    renderCodes('my-codes', myCodes);
   }
 
-  function renderFolderTree(tree, container) {
-    container.innerHTML = "";
+  // 3. Fetch Special Codes:
+  // Assuming these codes are marked in custom_data with a key { special: true }
+  let { data: specialCodes, error: errorSpecial } = await supabase
+    .from('qr_codes')
+    .select('*')
+    .contains('custom_data', { special: true });
 
-    for (const folderName in tree) {
-      const folder = tree[folderName];
-      const wrapper = document.createElement("div");
-      wrapper.className = "folder";
-
-      const totalScans = folder.__codes.reduce((a, b) => a + b.scans, 0);
-      const totalReferrals = folder.__codes.reduce((a, b) => a + b.referrals, 0);
-
-      const header = document.createElement("div");
-      header.className = "folder-header";
-      header.textContent = `${folderName} (${folder.__codes.length} codes, ${totalScans} scans, ${totalReferrals} referrals)`;
-      console.log(`📁 Folder: ${folderName}, Codes: ${folder.__codes.length}`, folder.__codes);
-
-      const content = document.createElement("div");
-      content.className = "folder-content";
-
-      if (folder.__codes.length > 0) {
-        const table = document.createElement("table");
-        const rows = folder.__codes.map(qr => `
-          <tr>
-            <td>${qr.id}</td>
-            <td>${qr.shared_location || ""}</td>
-            <td><a href="${qr.redirect_url || "#"}" target="_blank">${qr.redirect_url || ""}</a></td>
-            <td>${qr.scans}</td>
-            <td>${qr.referrals}</td>
-            <td>${qr.active ? "✅" : "❌"}</td>
-            <td>${qr.single_use ? "☑️" : ""}</td>
-          </tr>
-        `).join("");
-
-        table.innerHTML = `
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Location</th>
-              <th>Redirect</th>
-              <th>Scans</th>
-              <th>Referrals</th>
-              <th>Active</th>
-              <th>Single Use</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        `;
-        content.appendChild(table);
-      }
-
-      if (folder.__subfolders && Object.keys(folder.__subfolders).length > 0) {
-        renderFolderTree(folder.__subfolders, content);
-      }
-
-      header.onclick = () => {
-        content.style.display = content.style.display === "none" ? "block" : "none";
-      };
-
-      wrapper.appendChild(header);
-      wrapper.appendChild(content);
-      container.appendChild(wrapper);
-    }
+  if (errorSpecial) {
+    console.error('[dashboard.js] Error fetching special codes:', errorSpecial);
+  } else {
+    console.log('[dashboard.js] Special codes:', specialCodes);
+    renderCodes('special-codes', specialCodes);
   }
+});
 
-  function filterFolders() {
-    const query = document.getElementById("search").value.toLowerCase();
-    const filtered = allCodes.filter(qr =>
-      qr.id.toLowerCase().includes(query) ||
-      (qr.shared_location || "").toLowerCase().includes(query) ||
-      (qr.label || "").toLowerCase().includes(query) ||
-      (qr.redirect_url || "").toLowerCase().includes(query)
-    );
-    const tree = buildFolderTree(filtered);
-    renderFolderTree(tree, document.getElementById("folders"));
+// Helper function to render a list of codes into a given container element.
+function renderCodes(elementId, codes) {
+  const container = document.getElementById(elementId);
+  if (!container) {
+    console.error(`[dashboard.js] No element found with id ${elementId}`);
+    return;
   }
-
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.reload();
+  container.innerHTML = '';
+  if (!codes || codes.length === 0) {
+    container.innerHTML = '<p>No codes found in this category.</p>';
+    return;
   }
-  async function login() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
- redirectTo: 'https://uniqrn.co.uk/auth.html'
-
-      }
-    });
-  }
-
-  document.getElementById("search").addEventListener("input", filterFolders);
-  loadDashboard();
+  const list = document.createElement('ul');
+  codes.forEach(code => {
+    const item = document.createElement('li');
+    item.textContent = `ID: ${code.id} - Label: ${code.label || 'N/A'} - Active: ${code.active}`;
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+  console.log(`[dashboard.js] Rendered ${codes.length} codes in ${elementId}`);
+}

@@ -1,21 +1,44 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>UniQRn Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="/env.js"></script>
-<link href="style.css" rel="stylesheet"/></head>
-<body><div id="header"></div>
-<header>
-
-
-</header>
-<div class="center"><h1>UniQRn Dashboard</h1>
-<div id="balances">Loading balances...</div>
-<input id="search" placeholder="Search by label, ID, or URL..." type="text"/>
-</div>
-<div id="folders">Loading folders...</div>
-<script src="dashboard.js"></script><script src="/supabaseClient.js"></script><script src="/header.js"></script></body>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Dashboard | UniQRn</title>
+  <link href="style.css" rel="stylesheet"/>
+  <link rel="icon" href="/favicon.ico" />
+  <script src="/env.js"></script>
+  <!-- Load Supabase client from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Initialize our Supabase client -->
+  <script type="module" src="/supabaseClient.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <h1>Dashboard</h1>
+  
+  <section>
+    <h2>Affiliate Codes</h2>
+    <div id="affiliate-codes">
+      <!-- Affiliate codes will be rendered here -->
+    </div>
+  </section>
+  
+  <section>
+    <h2>My Codes</h2>
+    <div id="my-codes">
+      <!-- My codes will be rendered here -->
+    </div>
+  </section>
+  
+  <section>
+    <h2>Special Codes</h2>
+    <div id="special-codes">
+      <!-- Special codes will be rendered here -->
+    </div>
+  </section>
+  
+  <!-- Load our dashboard script -->
+  <script type="module" src="/dashboard.js"></script>
+  <script src="/header.js"></script>
+</body>
 </html>
