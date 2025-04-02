@@ -7,8 +7,10 @@
   <link href="style.css" rel="stylesheet"/>
   <link rel="icon" href="/favicon.ico" />
   <script src="/env.js"></script>
+  <!-- Load Supabase client from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="/supabaseClient.js"></script>
+  <!-- Load our Supabase client initialization -->
+  <script type="module" src="/supabaseClient.js"></script>
 </head>
 <body>
   <div id="header"></div>
@@ -42,8 +44,11 @@
     <button onclick="logout()">Log out</button>
   </div>
 
-  <!-- ✅ Scripts last to ensure DOM is ready -->
-  <script src="scan.js"></script>
+  <!-- For testing: an input field to simulate a QR code scan -->
+  <input type="text" id="qrCodeId" placeholder="Enter QR Code ID" />
+
+  <!-- Load our scan functionality -->
+  <script type="module" src="/scan.js"></script>
   <script src="/header.js"></script>
 </body>
 </html>

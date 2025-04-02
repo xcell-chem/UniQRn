@@ -2,43 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login Callback - UniQRn</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Load Supabase client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="/env.js"></script>
-  <script src="/supabaseClient.js"></script>
+  <title>User Registration | UniQRn</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="/supabaseClient.js"></script>
 </head>
 <body>
-  <p>Login successful. Processing...</p>
+  <h1>Register</h1>
+  <form id="registrationForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit" id="registerButton">Register</button>
+  </form>
+
   <script>
-    const supabaseClient = window.supabaseClient;
-    async function getSessionAndRedirect() {
-      // Wait a short moment to ensure session is available.
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session && session.user) {
-        const token = session.user.id;  // Here we use the user ID as the token.
-        const user_id = session.user.id;
-        const balance = 100.0;  // Replace with actual balance retrieval if available.
-        // Construct a new URL with query parameters.
-        const newUrl = window.location.origin + window.location.pathname +
-                       "?token=" + encodeURIComponent(token) +
-                       "&user_id=" + encodeURIComponent(user_id) +
-                       "&balance=" + encodeURIComponent(balance);
-        window.location.replace(newUrl);
+    // Utility to parse cookies into an object
+    function parseCookies() {
+      return document.cookie.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.split('=').map(c => c.trim());
+        acc[key] = value;
+        return acc;
+      }, {});
+    }
+
+    async function registerUser(event) {
+      event.preventDefault();
+      
+      console.log('[registration] Starting registration process.');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      console.log('[registration] Email:', email);
+
+      const cookies = parseCookies();
+      const referralUserId = cookies.referral_user || null;
+      if (referralUserId) {
+        console.log('[registration] Found referral cookie:', referralUserId);
       } else {
-        document.body.innerText = "Session not available. Please try again.";
+        console.log('[registration] No referral cookie found.');
       }
+
+      // Sign up using Supabase auth
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        console.error('[registration] Registration error:', error);
+        return;
+      }
+      console.log('[registration] Registration successful:', data);
+
+      // After successful sign-up, update the user record with the referral parent_id if exists
+      if (data.user && referralUserId) {
+        console.log('[registration] Updating user record with parent_id:', referralUserId);
+        const { error: updateError } = await supabase
+          .from('app_users')
+          .update({ parent_id: referralUserId })
+          .eq('id', data.user.id);
+        if (updateError) {
+          console.error('[registration] Error updating parent_id:', updateError);
+        } else {
+          console.log('[registration] User parent_id updated successfully.');
+        }
+      }
+      alert('Registration successful!');
     }
-    // If there's a fragment (which Supabase returns), process it.
-    if (window.location.hash) {
-      getSessionAndRedirect();
-    }
-    // Optionally auto-close the window after 5 seconds.
-    setTimeout(() => {
-      window.close();
-    }, 5000);
+
+    document.getElementById('registrationForm').addEventListener('submit', registerUser);
   </script>
 </body>
 </html>

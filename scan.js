@@ -1,121 +1,108 @@
-const qrId = new URLSearchParams(window.location.search).get("id");
+// scan.js
 
-const loginBox = document.getElementById("login");
-const formBox = document.getElementById("form");
-const loading = document.getElementById("loading");
-const thankyou = document.getElementById("thankyou");
+// Utility to set a cookie
+function setCookie(name, value, days) {
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+  console.log(`[scan.js] Cookie set: ${name}=${value} (expires in ${days} days)`);
+}
 
-let user = null;
-
-async function checkQRCode() {
-  if (loading) loading.style.display = "block";
-
-  const { data: qrData } = await window.supabase
-    .from("qr_codes")
-    .select("*")
-    .eq("id", qrId)
-    .limit(1);
-
-  const qr = qrData?.[0];
-
-  const { data: sessionData } = await window.supabase.auth.getSession();
-  user = sessionData?.session?.user;
-
-  if (qr?.owner_id && qr?.redirect_url) {
-    if (user?.id) {
-      await window.supabase.from("scan_events").insert({ qr_id: qrId, user_id: user.id });
-    }
-
-    let redirectTo = qr.redirect_url;
-    if (!redirectTo.startsWith("http")) redirectTo = "https://" + redirectTo;
-    window.location.href = redirectTo;
-    return;
+// Utility to get a cookie
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop().split(';').shift();
+    console.log(`[scan.js] Found cookie: ${name}=${cookieValue}`);
+    return cookieValue;
   }
+  console.log(`[scan.js] Cookie ${name} not found.`);
+  return null;
+}
 
-  if (!user) {
-    const { data: userData, error } = await window.supabase.auth.getUser();
-    if (error?.message === "User from sub claim in JWT does not exist") {
-      await window.supabase.auth.signOut();
-      location.reload();
+async function recordScan(qrCodeId, geotag, deviceInfo) {
+  console.log('[scan.js] Starting scan record process.');
+  const referralCookieName = 'referral_user';
+  let qrCode = null;
+  
+  // If no referral cookie exists, retrieve QR code details and set it
+  if (!getCookie(referralCookieName)) {
+    console.log('[scan.js] No referral cookie found. Fetching QR code details...');
+    let { data, error } = await supabase
+      .from('qr_codes')
+      .select('owner_id, active, redirect_url')
+      .eq('id', qrCodeId)
+      .single();
+    
+    if (error || !data) {
+      console.error('[scan.js] QR code not found or error occurred:', error);
       return;
     }
-    user = userData?.user;
-  }
-
-  loading.style.display = "none";
-
-  if (!user?.id) {
-    loginBox.style.display = "block";
+    
+    qrCode = data;
+    console.log('[scan.js] QR code details fetched:', qrCode);
+    // Set referral cookie using the QR code owner ID for 30 days
+    setCookie(referralCookieName, qrCode.owner_id, 30);
   } else {
-    document.getElementById("logout-box").style.display = "block";
-    formBox.style.display = "block";
-  }
-}
-
-async function login() {
-  const next = window.location.pathname + window.location.search;
-  const redirectUrl = `${window.location.origin}/auth.html?next=${encodeURIComponent(next)}`;
-
-  console.log("Redirecting to:", redirectUrl); // ✅ Add this for debug
-
-  await window.supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: redirectUrl // ✅ Explicit assignment required
+    console.log('[scan.js] Referral cookie exists. Fetching QR code status...');
+    let { data, error } = await supabase
+      .from('qr_codes')
+      .select('active, redirect_url')
+      .eq('id', qrCodeId)
+      .single();
+    
+    if (error || !data) {
+      console.error('[scan.js] QR code not found or error occurred:', error);
+      return;
     }
-  });
+    qrCode = data;
+    console.log('[scan.js] QR code status fetched:', qrCode);
+  }
+  
+  // Log scan event into the 'qr_scans' table
+  console.log('[scan.js] Logging scan event for QR code:', qrCodeId);
+  const { error } = await supabase
+    .from('qr_scans')
+    .insert([{ 
+      qr_code_id: qrCodeId, 
+      location: geotag ? JSON.stringify(geotag) : null, 
+      device_info: deviceInfo 
+    }]);
+  
+  if (error) {
+    console.error('[scan.js] Error logging scan event:', error);
+  } else {
+    console.log('[scan.js] Scan event recorded successfully.');
+  }
+  
+  // Determine redirect URL
+  let redirectUrl = 'https://uniqrn.co.uk'; // Default fallback URL
+  if (qrCode.active) {
+    redirectUrl = qrCode.redirect_url || 'https://yourdefaultdomain.com';
+    console.log('[scan.js] QR code is active. Using redirect URL:', redirectUrl);
+  } else {
+    console.log('[scan.js] QR code is inactive. Using fallback redirect URL:', redirectUrl);
+  }
+  
+  return redirectUrl;
 }
 
-async function claimQRCode() {
-  const location = document.getElementById("location").value.trim();
-  let redirect = document.getElementById("redirect_url").value.trim();
-  const label = document.getElementById("label").value.trim();
-  const custom_1 = document.getElementById("custom_1").value.trim();
-  const active = document.getElementById("active").checked;
-  const single_use = document.getElementById("single_use").checked;
-
-  if (!redirect.startsWith("http")) redirect = "https://" + redirect;
-  if (!location || !redirect || !user?.id) {
-    alert("Please log in and fill all fields.");
-    return;
+// Listen for scan button click event
+document.getElementById('scanButton').addEventListener('click', async () => {
+  console.log('[scan.js] Scan button clicked.');
+  // Retrieve the QR code ID from the input field
+  const qrCodeId = document.getElementById('qrCodeId').value;
+  console.log('[scan.js] QR code ID:', qrCodeId);
+  
+  // Optionally get geotag info; here we use a static example
+  const geotag = { lat: 51.5074, lng: -0.1278 };
+  console.log('[scan.js] Geotag information:', geotag);
+  const deviceInfo = navigator.userAgent;
+  console.log('[scan.js] Device info:', deviceInfo);
+  
+  const redirectUrl = await recordScan(qrCodeId, geotag, deviceInfo);
+  console.log('[scan.js] Redirecting to:', redirectUrl);
+  if (redirectUrl) {
+    window.location.href = redirectUrl;
   }
-
-  const { data: checkQR } = await window.supabase
-    .from("qr_codes")
-    .select("id")
-    .eq("id", qrId)
-    .limit(1);
-
-  if (checkQR?.length > 0) {
-    alert("QR code already claimed.");
-    return;
-  }
-
-  const { error: qrInsertError } = await window.supabase.from("qr_codes").insert({
-    id: qrId,
-    owner_id: user.id,
-    shared_location: location,
-    redirect_url: redirect,
-    registered: true,
-    label,
-    custom_1,
-    active,
-    single_use
-  });
-
-  if (qrInsertError) {
-    console.error("QR insert failed:", qrInsertError);
-    alert("Unable to register QR code.");
-    return;
-  }
-
-  formBox.style.display = "none";
-  thankyou.style.display = "block";
-}
-
-async function logout() {
-  await window.supabase.auth.signOut();
-  window.location.reload();
-}
-
-document.addEventListener("DOMContentLoaded", () => checkQRCode());
+});
