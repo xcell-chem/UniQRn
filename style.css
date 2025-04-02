@@ -7,7 +7,21 @@ body {
   padding: 2rem;
   text-align: center;
 }
+#generatedCodesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 16px;
+  margin-top: 20px;
+  padding: 10px;
+}
 
+.code-item {
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 4px;
+  background: #f9f9f9;
+  text-align: center;
+}
 .container {
   max-width: 900px;
   margin: auto;
