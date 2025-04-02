@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Claim QR Code | UniQRn</title>
   <link href="style.css" rel="stylesheet"/>
   <link rel="icon" href="/favicon.ico" />
@@ -60,11 +60,8 @@
     <button id="logoutBtn" onclick="logout()">Log out</button>
   </div>
 
-  <!-- Hidden input to simulate scanned QR code (for testing) -->
-  <input type="text" id="qrCodeId" placeholder="Enter QR Code ID" />
-
-  <!-- Scan button for testing the scan insertion -->
-  <button id="scanButton">Simulate Scan</button>
+  <!-- Hidden input to store the QR code ID (this could also come from a URL parameter) -->
+  <input type="hidden" id="qrCodeId" value="<!-- insert QR Code ID here -->" />
 
   <!-- Load our scan functionality -->
   <script type="module" src="/scan.js"></script>
@@ -104,7 +101,7 @@
         qrCodeId, locationVal, redirectUrlVal, labelVal, custom1Val, activeVal, singleUseVal
       });
       
-      // Update the QR code record with registration details
+      // Update the QR code record with registration details and mark as registered
       const { data, error } = await window.supabaseClient
         .from("qr_codes")
         .update({
@@ -114,7 +111,7 @@
           custom_1: custom1Val,
           active: activeVal,
           single_use: singleUseVal,
-          registered: true  // Mark it as registered
+          registered: true
         })
         .eq("id", qrCodeId);
       

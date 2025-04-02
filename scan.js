@@ -19,38 +19,44 @@ function getCookie(name) {
   return null;
 }
 
-// Main function to record a scan event or handle registration flow
-async function recordScan(qrCodeId, geotag, deviceInfo, ipAddress) {
-  console.log("[scan.js] Starting scan recording process for QR code:", qrCodeId);
-  const referralCookieName = 'referral_user';
+// Main function to handle scanning and registration flow
+async function processQRCode(qrCodeId, geotag, deviceInfo, ipAddress) {
+  console.log("[scan.js] Processing QR code:", qrCodeId);
   
-  // First, get QR code details including 'registered'
+  // Show loading indicator
+  document.getElementById("loading").style.display = "block";
+  
+  // Retrieve QR code details including registration status
   const { data: qrData, error: qrError } = await window.supabaseClient
     .from("qr_codes")
     .select("owner_id, active, redirect_url, registered")
     .eq("id", qrCodeId)
     .single();
     
+  document.getElementById("loading").style.display = "none";
+  
   if (qrError || !qrData) {
     console.error("[scan.js] Error fetching QR code details:", qrError);
+    alert("Error fetching QR code details.");
     return;
   }
   
   const qrCode = qrData;
   console.log("[scan.js] Retrieved QR code details:", qrCode);
   
-  // If the QR code is NOT registered, force login/registration:
+  // If the QR code is not registered, prompt login/registration
   if (!qrCode.registered) {
-    console.log("[scan.js] QR code is not registered. Prompting user to log in and claim the QR code.");
-    // Hide the loading indicator, show the login and registration form
-    document.getElementById("loading").style.display = "none";
+    console.log("[scan.js] QR code is not registered. Prompting for login/registration.");
+    // Display login and registration form
     document.getElementById("login").style.display = "block";
     document.getElementById("form").style.display = "block";
-    // Optionally, pre-fill the QR code ID in a hidden field or store it for later use
-    return; // stop further processing (no scan event is logged)
+    // Optionally, store the QR code ID for later use
+    document.getElementById("qrCodeId").value = qrCodeId;
+    return;
   }
   
-  // If the QR code is registered, then ensure the referral cookie is set:
+  // If the QR code is registered, ensure referral cookie is set
+  const referralCookieName = 'referral_user';
   if (!getCookie(referralCookieName)) {
     setCookie(referralCookieName, qrCode.owner_id, 30);
   } else {
@@ -72,7 +78,7 @@ async function recordScan(qrCodeId, geotag, deviceInfo, ipAddress) {
     console.log("[scan.js] Scan event recorded successfully.");
   }
   
-  // Determine redirection URL based on QR code status (active or fallback)
+  // Determine redirection URL
   let redirectUrl = 'https://uniqrn.co.uk'; // fallback URL
   if (qrCode.active) {
     redirectUrl = qrCode.redirect_url || 'https://yourdefaultdomain.com';
@@ -81,32 +87,23 @@ async function recordScan(qrCodeId, geotag, deviceInfo, ipAddress) {
     console.log("[scan.js] QR code is inactive. Using fallback redirect:", redirectUrl);
   }
   
-  return redirectUrl;
+  // Redirect the user
+  window.location.href = redirectUrl;
 }
 
-// Event listener for the "Scan" button
-document.getElementById('scanButton').addEventListener('click', async () => {
-  console.log("[scan.js] Scan button clicked.");
-  const qrCodeId = document.getElementById('qrCodeId').value;
-  console.log("[scan.js] QR code ID entered:", qrCodeId);
-  // Show a loading indicator while processing
-  document.getElementById("loading").style.display = "block";
-  // Hide login and form sections initially
-  document.getElementById("login").style.display = "none";
-  document.getElementById("form").style.display = "none";
-  
-  // For testing, using static geotag and device info; integrate actual geolocation if needed.
-  const geotag = { lat: 51.5074, lng: -0.1278 };
-  const deviceInfo = navigator.userAgent;
-  const ipAddress = null; // Set if available
-  
-  const redirectUrl = await recordScan(qrCodeId, geotag, deviceInfo, ipAddress);
-  
-  // Hide the loading indicator
-  document.getElementById("loading").style.display = "none";
-  
-  // If a redirect URL was returned, proceed with redirection
-  if (redirectUrl) {
-    window.location.href = redirectUrl;
+// Automatically process the QR code if the QR code ID is provided
+window.addEventListener("DOMContentLoaded", async () => {
+  // Here you could extract the QR code ID from the URL or from another source.
+  // For this example, we assume it's provided in the hidden input field.
+  const qrCodeId = document.getElementById("qrCodeId").value;
+  if (qrCodeId) {
+    // Optionally, you could auto-trigger the scan processing
+    // For example, call processQRCode() automatically:
+    const geotag = { lat: 51.5074, lng: -0.1278 };
+    const deviceInfo = navigator.userAgent;
+    const ipAddress = null;
+    await processQRCode(qrCodeId, geotag, deviceInfo, ipAddress);
+  } else {
+    console.log("[scan.js] No QR code ID provided for processing.");
   }
 });
