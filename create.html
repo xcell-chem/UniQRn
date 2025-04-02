@@ -16,14 +16,34 @@
   
   <!-- Code creation form -->
   <div id="createForm">
-    <!-- (Your existing form fields go here; for example:) -->
-    <label>Label:
+    <label>
+      Label/Folder:
       <input id="label" type="text" placeholder="e.g. ads/mirrors"/>
     </label>
-    <label>Redirect URL:
+    <br/>
+    <label>
+      Redirect URL:
       <input id="redirect_url" type="url" placeholder="https://example.com"/>
     </label>
-    <!-- Add any other fields you currently have -->
+    <br/>
+    <label>
+      Location:
+      <input id="location" type="text" placeholder="Where is the code placed?"/>
+    </label>
+    <br/>
+    <label>
+      Optional Note:
+      <input id="custom_1" type="text" placeholder="Campaign name or note"/>
+    </label>
+    <br/>
+    <label>
+      <input type="checkbox" id="active" checked/> Mark QR as active
+    </label>
+    <br/>
+    <label>
+      <input type="checkbox" id="single_use"/> Make single-use only
+    </label>
+    <br/>
     <button id="createCodeBtn">Create Code</button>
   </div>
   
