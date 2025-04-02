@@ -25,8 +25,8 @@
         provider: 'google',
         options: {
           // Redirect back to this page for token extraction.
-          redirectTo: window.location.origin + window.location.pathname
-        }
+          redirectTo: "https://uniqrn.co.uk/login_callback.html"
+         }
       });
       if (error) {
         document.body.innerHTML = "Error initiating login: " + error.message;
