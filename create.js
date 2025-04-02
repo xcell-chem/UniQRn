@@ -1,20 +1,26 @@
 // create.js
 
-const supabase = window.supabaseClient; // Using the initialized client
+const supabase = window.supabaseClient; // use your initialized Supabase client
 
 // Function to create a new QR code record in the database.
 async function createCode() {
-  // You might collect additional form data here if needed.
-  // For simplicity, we'll just insert a new QR code with default values.
+  // You might collect additional form data if needed.
+  // For this example, we use form fields "label" and "redirect_url".
+  const labelVal = document.getElementById("label").value || "Unlabeled";
+  const redirectUrlVal = document.getElementById("redirect_url").value || null;
+  // Assume you have the current user's ID stored in window.currentUserId.
+  // You should set window.currentUserId when the user logs in.
+  const ownerId = window.currentUserId; 
+
   const { data, error } = await supabase
     .from("qr_codes")
     .insert([{
-      owner_id: /* set current user id if needed, e.g. */ window.currentUserId, // ensure this is defined
-      label: document.getElementById("label")?.value || "Unlabeled",
-      redirect_url: document.getElementById("redirect_url")?.value || null,
+      owner_id: ownerId,
+      label: labelVal,
+      redirect_url: redirectUrlVal,
       active: true,
-      registered: false, // Initially unregistered until claimed
-      created_by: window.currentUserId // assuming current user is the creator
+      registered: false, // Initially, the code is unregistered until claimed.
+      created_by: ownerId
     }])
     .single();
 
@@ -28,14 +34,13 @@ async function createCode() {
   return data;
 }
 
-// Function to display a code in the grid container.
+// Function to display a newly created code in the grid container.
 function displayCode(code) {
   const container = document.getElementById("generatedCodesContainer");
 
   // Create an element for the code.
   const codeElement = document.createElement("div");
   codeElement.className = "code-item";
-  // Customize what you want to display. For example:
   codeElement.innerHTML = `
     <p><strong>ID:</strong> ${code.id}</p>
     <p><strong>Label:</strong> ${code.label || "Unlabeled"}</p>
@@ -55,9 +60,8 @@ document.getElementById("createCodeBtn").addEventListener("click", async () => {
   }
 });
 
-// Optionally, if you want to load all codes for the current user when the page loads:
+// Optionally, load existing codes on page load.
 async function loadUserCodes() {
-  // Ensure you have the current user id stored somewhere, e.g., window.currentUserId
   const { data: codes, error } = await supabase
     .from("qr_codes")
     .select("*")
@@ -72,5 +76,5 @@ async function loadUserCodes() {
   codes.forEach(displayCode);
 }
 
-// Optionally, call loadUserCodes() on page load if you want to display existing codes.
+// Uncomment the next line to load existing codes when the page loads.
 // window.addEventListener("DOMContentLoaded", loadUserCodes);
