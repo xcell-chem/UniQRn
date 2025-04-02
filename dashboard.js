@@ -1,6 +1,6 @@
 // dashboard.js
 
-const supabase = window.supabase; // assuming supabase is initialized from supabaseClient.js
+const supabase = window.supabaseClient; // use the initialized client from supabaseClient.js
 let user = null;
 let allCodes = []; // to store codes with scan/referral counts for folder tree
 
