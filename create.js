@@ -1,9 +1,9 @@
 // create.js
 
-const supabase = window.supabaseClient; // Using the initialized Supabase client
+const supabase = window.supabaseClient; // use your initialized Supabase client
 
-// For this example, assume the current user's ID is stored in window.currentUserId.
-window.currentUserId = "f92c1e72-0ac2-4b9d-8722-65a08a9e6604"; // Replace with actual current user id
+// Assume the current user ID is stored in window.currentUserId.
+window.currentUserId = "f92c1e72-0ac2-4b9d-8722-65a08a9e6604"; // Replace with actual current user ID
 
 // Utility to display feedback messages to the user.
 function showFeedback(message, isError = false) {
@@ -16,7 +16,7 @@ function showFeedback(message, isError = false) {
   }, 5000);
 }
 
-// Function to create new QR codes in bulk (based on the quantity field).
+// Function to create new QR codes in bulk based on the quantity field.
 async function createCodes() {
   const labelVal = document.getElementById("label").value || "Unlabeled";
   const redirectUrlVal = document.getElementById("redirect_url").value || null;
@@ -64,6 +64,7 @@ async function createCodes() {
 
 // Function to display a single code in the grid layout.
 function displayCode(code) {
+  if (!code) return; // Prevent errors if code is null
   const container = document.getElementById("generatedCodesContainer");
   const codeElement = document.createElement("div");
   codeElement.className = "code-item";
@@ -81,11 +82,12 @@ document.getElementById("createCodeBtn").addEventListener("click", async () => {
   console.log("[create.js] Create Code(s) button clicked.");
   const codes = await createCodes();
   if (codes && codes.length > 0) {
-    codes.forEach(displayCode);
+    // Filter out any null values before displaying
+    codes.filter(code => code !== null).forEach(displayCode);
   }
 });
 
-// Optional: Load existing codes for the current user when the page loads.
+// Optional: Load existing codes for the current user on page load.
 async function loadUserCodes() {
   const { data: codes, error } = await supabase
     .from("qr_codes")
@@ -101,5 +103,5 @@ async function loadUserCodes() {
   codes.forEach(displayCode);
 }
 
-// Uncomment the next line to load existing codes on page load.
+// Uncomment the next line to load existing codes automatically on page load.
 // window.addEventListener("DOMContentLoaded", loadUserCodes);
