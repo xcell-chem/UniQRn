@@ -22,7 +22,7 @@ async function loadDashboard() {
   }
   console.log("[dashboard.js] Logged in as:", user.email);
 
-  // Parallel queries: load affiliate codes (registered but not created), my codes (created by user), and user balance
+  // Parallel queries: load affiliate codes, my codes, and user balance
   const [
     { data: affiliateCodes, error: affiliateError },
     { data: myCodes, error: myCodesError },
@@ -57,18 +57,21 @@ async function loadDashboard() {
   console.log(`[dashboard.js] Loaded ${myCodes.length} my codes.`);
   console.log("[dashboard.js] My Codes Data:", myCodes);
 
-  // Combine codes; if code is both created and registered, it appears only under "My Codes"
+  // Combine codes; if a code is both created and registered, it appears only under "My Codes"
   allCodes = [...myCodes, ...affiliateCodes];
 
-  // Process each code: retrieve scan events and compute counts
+  // Process each QR code: retrieve scan events and compute counts
   for (const qr of allCodes) {
+    console.log(`[dashboard.js] Querying scan events for QR code ID: ${qr.id}`);
     const { data: events, error: eventsError } = await supabase
       .from("scan_events")
       .select("referred_signup, scanned_at, ip_address, device_info")
       .eq("qr_code_id", qr.id);
-
+      
     if (eventsError) {
       console.error(`[dashboard.js] Error loading scan events for ${qr.id}:`, eventsError);
+    } else {
+      console.log(`[dashboard.js] Retrieved ${events ? events.length : 0} scan events for ${qr.id}`);
     }
     const scans = events ? events.length : 0;
     const referrals = events ? events.filter(e => e.referred_signup).length : 0;
@@ -251,6 +254,7 @@ async function login() {
 // Attach search event listener and load dashboard on startup
 document.getElementById("search").addEventListener("input", filterFolders);
 loadDashboard();
-// Expose login and logout functions to the global scope for inline event handlers
+
+// Expose login and logout functions globally for inline handlers
 window.login = login;
 window.logout = logout;

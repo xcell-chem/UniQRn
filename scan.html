@@ -16,39 +16,117 @@
   <div id="header"></div>
   <h1>QR Registration</h1>
 
-  <!-- ✅ Ensure this exists for JS to access -->
+  <!-- Loading indicator -->
   <div id="loading" style="display:none;">Checking QR code...</div>
 
+  <!-- Login prompt if QR code is unregistered -->
   <div id="login" style="display:none;">
     <p>This QR code is unregistered. Please log in with Google to register it.</p>
-    <button onclick="login()">Login with Google</button>
+    <button id="loginBtn" onclick="login()">Login with Google</button>
   </div>
 
+  <!-- Registration form for claiming the QR code -->
   <div id="form" style="display:none;">
     <p>You’re about to claim this QR code!</p>
-    <label>Where did you place this QR code?<input id="location" type="text"/></label>
-    <label>What URL should this QR code redirect to?<input id="redirect_url" type="url"/></label>
-    <label>Group/Folder:<input id="label" type="text" placeholder="e.g. ads/mirrors"/></label>
-    <label>Optional Note:<input id="custom_1" type="text" placeholder="e.g. Campaign name"/></label>
-    <label><input type="checkbox" id="active" checked/> Mark QR as active</label>
-    <label><input type="checkbox" id="single_use"/> Make single-use only</label>
-    <button onclick="claimQRCode()">Register QR Code</button>
+    <label>Where did you place this QR code?
+      <input id="location" type="text"/>
+    </label>
+    <label>What URL should this QR code redirect to?
+      <input id="redirect_url" type="url"/>
+    </label>
+    <label>Group/Folder:
+      <input id="label" type="text" placeholder="e.g. ads/mirrors"/>
+    </label>
+    <label>Optional Note:
+      <input id="custom_1" type="text" placeholder="e.g. Campaign name"/>
+    </label>
+    <label>
+      <input type="checkbox" id="active" checked/> Mark QR as active
+    </label>
+    <label>
+      <input type="checkbox" id="single_use"/> Make single-use only
+    </label>
+    <button id="claimBtn" onclick="claimQRCode()">Register QR Code</button>
   </div>
 
+  <!-- Thank-you message -->
   <div id="thankyou" style="display:none;">
     <h2>🎉 Thank you!</h2>
     <p>Your QR code has been registered successfully.</p>
   </div>
 
+  <!-- Logout box -->
   <div id="logout-box" style="display:none;">
-    <button onclick="logout()">Log out</button>
+    <button id="logoutBtn" onclick="logout()">Log out</button>
   </div>
 
-  <!-- For testing: an input field to simulate a QR code scan -->
+  <!-- Hidden input to simulate scanned QR code (for testing) -->
   <input type="text" id="qrCodeId" placeholder="Enter QR Code ID" />
+
+  <!-- Scan button for testing the scan insertion -->
+  <button id="scanButton">Simulate Scan</button>
 
   <!-- Load our scan functionality -->
   <script type="module" src="/scan.js"></script>
   <script src="/header.js"></script>
+  
+  <!-- Inline script to define login, logout, and claimQRCode -->
+  <script>
+    // Stub for login – calls Supabase OAuth login
+    function login() {
+      console.log("[scan.html] login() called");
+      window.supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: 'https://uniqrn.co.uk/auth.html' }
+      });
+    }
+
+    // Stub for logout
+    function logout() {
+      console.log("[scan.html] logout() called");
+      window.supabaseClient.auth.signOut().then(() => {
+        window.location.reload();
+      });
+    }
+
+    // Stub for claimQRCode – processes the registration form for an unregistered QR code
+    async function claimQRCode() {
+      console.log("[scan.html] claimQRCode() called");
+      const locationVal = document.getElementById("location").value;
+      const redirectUrlVal = document.getElementById("redirect_url").value;
+      const labelVal = document.getElementById("label").value;
+      const custom1Val = document.getElementById("custom_1").value;
+      const activeVal = document.getElementById("active").checked;
+      const singleUseVal = document.getElementById("single_use").checked;
+      const qrCodeId = document.getElementById("qrCodeId").value;
+      
+      console.log("[scan.html] Claiming QR Code with data:", {
+        qrCodeId, locationVal, redirectUrlVal, labelVal, custom1Val, activeVal, singleUseVal
+      });
+      
+      // Update the QR code record with registration details
+      const { data, error } = await window.supabaseClient
+        .from("qr_codes")
+        .update({
+          shared_location: locationVal,
+          redirect_url: redirectUrlVal,
+          label: labelVal,
+          custom_1: custom1Val,
+          active: activeVal,
+          single_use: singleUseVal,
+          registered: true  // Mark it as registered
+        })
+        .eq("id", qrCodeId);
+      
+      if (error) {
+        console.error("[scan.html] Error updating QR code registration:", error);
+        alert("Error registering QR code.");
+      } else {
+        console.log("[scan.html] QR code registration successful:", data);
+        document.getElementById("form").style.display = "none";
+        document.getElementById("thankyou").style.display = "block";
+      }
+    }
+  </script>
 </body>
 </html>
