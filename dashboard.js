@@ -1,6 +1,6 @@
 // dashboard.js
 
-const supabase = window.supabaseClient; // use the initialized client from supabaseClient.js
+const supabase = window.supabaseClient; // use the initialized client
 let user = null;
 let allCodes = []; // to store codes with scan/referral counts for folder tree
 
@@ -8,8 +8,8 @@ async function loadDashboard() {
   console.log("[dashboard.js] Loading dashboard...");
 
   // Retrieve current session/user
-  const { data: sessionData } = await supabase.auth.getSession();
-  user = sessionData?.session?.user;
+  const { data: { session } } = await supabase.auth.getSession();
+  user = session?.user;
   if (!user) {
     const { data: userData } = await supabase.auth.getUser();
     user = userData?.user;
@@ -61,14 +61,13 @@ async function loadDashboard() {
   console.log("[dashboard.js] My Codes Data:", myCodes);
 
   // Combine codes for folder tree display.
-  // You might choose to show them in separate sections, but here we combine and then render the folder tree.
   allCodes = [...myCodes, ...affiliateCodes];
 
   // Process each QR code to retrieve scan/referral counts
   for (const qr of allCodes) {
     const { data: events, error: eventsError } = await supabase
       .from("scan_events")
-      .select("referred_signup")
+      .select("referred_signup, scanned_at, ip_address, device_info")
       .eq("qr_code_id", qr.id);
     
     if (eventsError) {
@@ -77,7 +76,7 @@ async function loadDashboard() {
     
     const scans = events ? events.length : 0;
     const referrals = events ? events.filter(e => e.referred_signup).length : 0;
-    Object.assign(qr, { scans, referrals });
+    Object.assign(qr, { scans, referrals, events }); // store events for later use
   }
   
   // Build folder tree from codes using their label
@@ -133,32 +132,97 @@ function renderFolderTree(tree, container) {
     
     if (folder.__codes.length > 0) {
       const table = document.createElement("table");
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Location</th>
-            <th>Redirect</th>
-            <th>Scans</th>
-            <th>Referrals</th>
-            <th>Active</th>
-            <th>Single Use</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${folder.__codes.map(qr => `
-            <tr>
-              <td>${qr.id}</td>
-              <td>${qr.shared_location || ""}</td>
-              <td><a href="${qr.redirect_url || "#"}" target="_blank">${qr.redirect_url || ""}</a></td>
-              <td>${qr.scans}</td>
-              <td>${qr.referrals}</td>
-              <td>${qr.active ? "✅" : "❌"}</td>
-              <td>${qr.single_use ? "☑️" : ""}</td>
-            </tr>
-          `).join("")}
-        </tbody>
+      // Create table header
+      const thead = document.createElement("thead");
+      thead.innerHTML = `
+        <tr>
+          <th>ID</th>
+          <th>Location</th>
+          <th>Redirect</th>
+          <th>Scans</th>
+          <th>Referrals</th>
+          <th>Active</th>
+          <th>Single Use</th>
+          <th>Actions</th>
+        </tr>
       `;
+      table.appendChild(thead);
+      
+      const tbody = document.createElement("tbody");
+      
+      folder.__codes.forEach(qr => {
+        // Create a row for the QR code details
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${qr.id}</td>
+          <td>${qr.shared_location || ""}</td>
+          <td><a href="${qr.redirect_url || "#"}" target="_blank">${qr.redirect_url || ""}</a></td>
+          <td>${qr.scans}</td>
+          <td>${qr.referrals}</td>
+          <td>${qr.active ? "✅" : "❌"}</td>
+          <td>${qr.single_use ? "☑️" : ""}</td>
+          <td><button class="toggle-scans-btn">Show Scans</button></td>
+        `;
+        tbody.appendChild(row);
+        
+        // Create a hidden row for scan events details
+        const detailsRow = document.createElement("tr");
+        detailsRow.style.display = "none";
+        const detailsCell = document.createElement("td");
+        detailsCell.colSpan = 8;
+        detailsCell.innerHTML = `<div class="scan-details">Loading scan events...</div>`;
+        detailsRow.appendChild(detailsCell);
+        tbody.appendChild(detailsRow);
+        
+        // Attach click event to the "Show Scans" button
+        const toggleBtn = row.querySelector(".toggle-scans-btn");
+        toggleBtn.addEventListener("click", async () => {
+          if (detailsRow.style.display === "none") {
+            // Load scan events if not already loaded
+            if (!detailsCell.dataset.loaded) {
+              console.log(`[dashboard.js] Loading scan events for code ${qr.id}`);
+              // Use the stored events if available
+              const events = qr.events || [];
+              if (events.length === 0) {
+                detailsCell.innerHTML = "<em>No scan events found.</em>";
+              } else {
+                // Build a table of scan events
+                let eventsHTML = `
+                  <table class="events-table">
+                    <thead>
+                      <tr>
+                        <th>Timestamp</th>
+                        <th>IP Address</th>
+                        <th>Device Info</th>
+                        <th>Referred Signup</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${events.map(ev => `
+                        <tr>
+                          <td>${ev.scanned_at || ""}</td>
+                          <td>${ev.ip_address || ""}</td>
+                          <td>${ev.device_info || ""}</td>
+                          <td>${ev.referred_signup ? "Yes" : "No"}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                `;
+                detailsCell.innerHTML = eventsHTML;
+              }
+              detailsCell.dataset.loaded = "true";
+            }
+            detailsRow.style.display = "table-row";
+            toggleBtn.textContent = "Hide Scans";
+          } else {
+            detailsRow.style.display = "none";
+            toggleBtn.textContent = "Show Scans";
+          }
+        });
+      });
+      
+      table.appendChild(tbody);
       content.appendChild(table);
     }
     
