@@ -1,37 +1,34 @@
 // dashboard.js
 
-const supabase = window.supabaseClient; // use the initialized client
+const supabase = window.supabaseClient; // use the initialized Supabase client
 let user = null;
-let allCodes = []; // to store codes with scan/referral counts for folder tree
+let allCodes = []; // holds codes with scan details for folder tree
 
+// Load dashboard data and render folder tree with expandable code rows
 async function loadDashboard() {
   console.log("[dashboard.js] Loading dashboard...");
 
-  // Retrieve current session/user
+  // Retrieve session and user info
   const { data: { session } } = await supabase.auth.getSession();
   user = session?.user;
   if (!user) {
     const { data: userData } = await supabase.auth.getUser();
     user = userData?.user;
   }
-  
   if (!user) {
     console.error("[dashboard.js] User not logged in.");
     document.body.innerHTML = `<h2>🔐 Please log in to access your dashboard.</h2><button onclick="login()">Login with Google</button>`;
     return;
   }
-  
   console.log("[dashboard.js] Logged in as:", user.email);
 
-  // Parallel queries: load Affiliate Codes, My Codes, and user balance info
+  // Parallel queries: load affiliate codes (registered but not created), my codes (created by user), and user balance
   const [
     { data: affiliateCodes, error: affiliateError },
     { data: myCodes, error: myCodesError },
     { data: userInfo, error: userError }
   ] = await Promise.all([
-    // Affiliate Codes: owner_id equals user.id and created_by is not equal to user.id
     supabase.from("qr_codes").select("*").eq("owner_id", user.id).neq("created_by", user.id),
-    // My Codes: codes created by the user
     supabase.from("qr_codes").select("*").eq("created_by", user.id),
     supabase.from("app_users").select("coin_balance, free_credits, purchased_credits").eq("id", user.id).single()
   ]);
@@ -60,41 +57,35 @@ async function loadDashboard() {
   console.log(`[dashboard.js] Loaded ${myCodes.length} my codes.`);
   console.log("[dashboard.js] My Codes Data:", myCodes);
 
-  // Combine codes for folder tree display.
+  // Combine codes; if code is both created and registered, it appears only under "My Codes"
   allCodes = [...myCodes, ...affiliateCodes];
 
-  // Process each QR code to retrieve scan/referral counts
+  // Process each code: retrieve scan events and compute counts
   for (const qr of allCodes) {
     const { data: events, error: eventsError } = await supabase
       .from("scan_events")
       .select("referred_signup, scanned_at, ip_address, device_info")
-      .eq("qr_code_id", qr.id);
-    
+      .eq("qr_id", qr.id);
     if (eventsError) {
       console.error(`[dashboard.js] Error loading scan events for ${qr.id}:`, eventsError);
     }
-    
     const scans = events ? events.length : 0;
     const referrals = events ? events.filter(e => e.referred_signup).length : 0;
-    Object.assign(qr, { scans, referrals, events }); // store events for later use
+    Object.assign(qr, { scans, referrals, events });
   }
   
-  // Build folder tree from codes using their label
+  // Build and render folder tree using the 'label' field (split on "/")
   const tree = buildFolderTree(allCodes);
   console.log("[dashboard.js] Folder Tree Structure:", tree);
-  
-  // Render the folder tree into the container element with id "folders"
   renderFolderTree(tree, document.getElementById("folders"));
 }
 
-// Builds a folder tree based on the "label" field (split by "/")
+// Builds a folder tree structure from codes based on the 'label' field
 function buildFolderTree(codes) {
   const root = {};
-  
   codes.forEach(qr => {
     const labelPath = (qr.label || "Unlabeled").split("/").map(s => s.trim());
     let node = root;
-    
     labelPath.forEach((part, index) => {
       if (!node[part]) {
         node[part] = { __codes: [], __subfolders: {} };
@@ -106,14 +97,12 @@ function buildFolderTree(codes) {
       }
     });
   });
-  
   return root;
 }
 
 // Renders the folder tree recursively into a container element
 function renderFolderTree(tree, container) {
   container.innerHTML = "";
-  
   for (const folderName in tree) {
     const folder = tree[folderName];
     const wrapper = document.createElement("div");
@@ -132,7 +121,6 @@ function renderFolderTree(tree, container) {
     
     if (folder.__codes.length > 0) {
       const table = document.createElement("table");
-      // Create table header
       const thead = document.createElement("thead");
       thead.innerHTML = `
         <tr>
@@ -149,9 +137,7 @@ function renderFolderTree(tree, container) {
       table.appendChild(thead);
       
       const tbody = document.createElement("tbody");
-      
       folder.__codes.forEach(qr => {
-        // Create a row for the QR code details
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${qr.id}</td>
@@ -165,7 +151,7 @@ function renderFolderTree(tree, container) {
         `;
         tbody.appendChild(row);
         
-        // Create a hidden row for scan events details
+        // Create a hidden row for detailed scan events
         const detailsRow = document.createElement("tr");
         detailsRow.style.display = "none";
         const detailsCell = document.createElement("td");
@@ -174,19 +160,16 @@ function renderFolderTree(tree, container) {
         detailsRow.appendChild(detailsCell);
         tbody.appendChild(detailsRow);
         
-        // Attach click event to the "Show Scans" button
+        // Toggle detailed view on button click
         const toggleBtn = row.querySelector(".toggle-scans-btn");
         toggleBtn.addEventListener("click", async () => {
           if (detailsRow.style.display === "none") {
-            // Load scan events if not already loaded
             if (!detailsCell.dataset.loaded) {
-              console.log(`[dashboard.js] Loading scan events for code ${qr.id}`);
-              // Use the stored events if available
+              console.log(`[dashboard.js] Loading detailed scan events for code ${qr.id}`);
               const events = qr.events || [];
               if (events.length === 0) {
                 detailsCell.innerHTML = "<em>No scan events found.</em>";
               } else {
-                // Build a table of scan events
                 let eventsHTML = `
                   <table class="events-table">
                     <thead>
@@ -221,12 +204,11 @@ function renderFolderTree(tree, container) {
           }
         });
       });
-      
       table.appendChild(tbody);
       content.appendChild(table);
     }
     
-    // Render subfolders recursively
+    // Recursively render subfolders if they exist
     if (folder.__subfolders && Object.keys(folder.__subfolders).length > 0) {
       renderFolderTree(folder.__subfolders, content);
     }
@@ -234,14 +216,13 @@ function renderFolderTree(tree, container) {
     header.onclick = () => {
       content.style.display = content.style.display === "none" ? "block" : "none";
     };
-    
     wrapper.appendChild(header);
     wrapper.appendChild(content);
     container.appendChild(wrapper);
   }
 }
 
-// Filters codes based on the search query and re-renders the folder tree
+// Filter folder tree based on search input
 function filterFolders() {
   const query = document.getElementById("search").value.toLowerCase();
   const filtered = allCodes.filter(qr =>
@@ -266,8 +247,6 @@ async function login() {
   });
 }
 
-// Attach the search event listener
+// Attach search event listener and load dashboard on startup
 document.getElementById("search").addEventListener("input", filterFolders);
-
-// Load the dashboard on startup
 loadDashboard();
