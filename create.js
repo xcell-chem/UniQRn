@@ -1,64 +1,76 @@
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-const form = document.getElementById("create-form");
-const previewContainer = document.getElementById("qrcode-preview-container");
+// create.js
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+const supabase = window.supabaseClient; // Using the initialized client
 
-  const qty = parseInt(document.getElementById("quantity").value);
-  const redirect_url = document.getElementById("redirect_url").value.trim();
-  const group = document.getElementById("group").value.trim();
-  const custom_1 = document.getElementById("custom_1").value.trim();
-  const active = document.getElementById("active").checked;
-  const single_use = document.getElementById("single_use").checked;
-  const registered = document.getElementById("registered").checked;
-
-  if (!qty || qty < 1 || qty > 100) return alert("Please enter a quantity between 1–100.");
-
-  const { data: sessionData } = await supabase.auth.getSession();
-  const user = sessionData?.session?.user;
-  if (!user) return alert("Please log in first.");
-
-  previewContainer.innerHTML = "";
-  const qrData = [];
-
-  for (let i = 0; i < qty; i++) {
-    const id = crypto.randomUUID();
-    const fullURL = `https://UniQRn.co.uk/?id=${id}`;
-
-    const canvas = document.createElement("canvas");
-    await QRCode.toCanvas(canvas, fullURL, { width: 120 });
-
-    const block = document.createElement("div");
-    block.className = "qr-block";
-    block.appendChild(canvas);
-
-    const idText = document.createElement("div");
-    idText.className = "qr-id";
-    idText.textContent = id.slice(0, 8);
-    block.appendChild(idText);
-
-    previewContainer.appendChild(block);
-
-    qrData.push({
-      id,
-      owner_id: user.id,
-      redirect_url: redirect_url || null,
-      label: group || null,
-      custom_1: custom_1 || null,
-      active,
-      single_use,
-      registered,
-      created_by: user.id
-    });
-  }
-
-  const { error } = await supabase.from("qr_codes").insert(qrData);
+// Function to create a new QR code record in the database.
+async function createCode() {
+  // You might collect additional form data here if needed.
+  // For simplicity, we'll just insert a new QR code with default values.
+  const { data, error } = await supabase
+    .from("qr_codes")
+    .insert([{
+      owner_id: /* set current user id if needed, e.g. */ window.currentUserId, // ensure this is defined
+      label: document.getElementById("label")?.value || "Unlabeled",
+      redirect_url: document.getElementById("redirect_url")?.value || null,
+      active: true,
+      registered: false, // Initially unregistered until claimed
+      created_by: window.currentUserId // assuming current user is the creator
+    }])
+    .single();
 
   if (error) {
-    console.error("❌ Error saving QR codes:", error);
-    alert("Some error occurred while saving QR codes.");
-  } else {
-    alert(`✅ Successfully created ${qrData.length} QR codes.`);
+    console.error("[create.js] Error creating code:", error);
+    alert("Error creating code.");
+    return null;
+  }
+
+  console.log("[create.js] Code created successfully:", data);
+  return data;
+}
+
+// Function to display a code in the grid container.
+function displayCode(code) {
+  const container = document.getElementById("generatedCodesContainer");
+
+  // Create an element for the code.
+  const codeElement = document.createElement("div");
+  codeElement.className = "code-item";
+  // Customize what you want to display. For example:
+  codeElement.innerHTML = `
+    <p><strong>ID:</strong> ${code.id}</p>
+    <p><strong>Label:</strong> ${code.label || "Unlabeled"}</p>
+    <p><strong>Redirect:</strong> ${code.redirect_url || "None"}</p>
+  `;
+
+  // Append the new code element to the container.
+  container.appendChild(codeElement);
+}
+
+// Event listener for the "Create Code" button.
+document.getElementById("createCodeBtn").addEventListener("click", async () => {
+  console.log("[create.js] Create Code button clicked.");
+  const newCode = await createCode();
+  if (newCode) {
+    displayCode(newCode);
   }
 });
+
+// Optionally, if you want to load all codes for the current user when the page loads:
+async function loadUserCodes() {
+  // Ensure you have the current user id stored somewhere, e.g., window.currentUserId
+  const { data: codes, error } = await supabase
+    .from("qr_codes")
+    .select("*")
+    .eq("owner_id", window.currentUserId);
+  if (error) {
+    console.error("[create.js] Error loading user codes:", error);
+    return;
+  }
+  console.log("[create.js] Loaded user codes:", codes);
+  const container = document.getElementById("generatedCodesContainer");
+  container.innerHTML = ""; // Clear previous content.
+  codes.forEach(displayCode);
+}
+
+// Optionally, call loadUserCodes() on page load if you want to display existing codes.
+// window.addEventListener("DOMContentLoaded", loadUserCodes);

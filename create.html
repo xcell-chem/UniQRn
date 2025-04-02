@@ -1,41 +1,29 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Create QR Codes – UniQRn</title>
-<link href="style.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script defer="" src="header.js"></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Codes | UniQRn</title>
+  <link href="style.css" rel="stylesheet"/>
+  <link rel="icon" href="/favicon.ico"/>
+  <script src="/env.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="/supabaseClient.js"></script>
 </head>
-<body><div id="header"></div>
-<h1 style="text-align: center; color: gold;">✨ Create QR Codes</h1>
-<main class="container">
-<form>
-<label style="text-align: center;">How many QR codes?
-        <input type="number" value="1"/>
-</label>
-<label style="text-align: center;">Redirect URL (optional)
-        <input type="url" value="UniQRn.co.uk"/>
-</label>
-<label style="text-align: center;">Group / Folder (optional)
-        <input placeholder="e.g. 2025/March/Easter/flyer1" type="text"/>
-</label>
-<label style="text-align: center;">Description (optional)
-        <textarea placeholder="e.g. School hall, promo 3"></textarea>
-</label>
-<label style="text-align: center;">
-<input checked="" type="checkbox"/> QR code is active
-      </label>
-<label style="text-align: center;">
-<input type="checkbox"/> Single use only
-      </label>
-<label style="text-align: center;">
-<input checked="" type="checkbox"/> Pre-register (ready to use now). If unchecked, user can edit on first scan.
-      </label>
-<button style="display: block; margin: 2rem auto; padding: 0.75rem 2rem;" type="submit">Generate QR Codes</button>
-</form>
-</main>
-<script src="/env.js"></script><script src="/supabaseClient.js"></script><script src="/header.js"></script></body>
+<body>
+  <div id="header"></div>
+  <h1>Create Codes</h1>
+  
+  <!-- Code creation form -->
+  <div id="createForm">
+    <!-- (Include any form fields you need here) -->
+    <button id="createCodeBtn">Create Code</button>
+  </div>
+  
+  <!-- Container for displaying generated codes -->
+  <div id="generatedCodesContainer"></div>
+  
+  <script type="module" src="/create.js"></script>
+  <script src="/header.js"></script>
+</body>
 </html>
