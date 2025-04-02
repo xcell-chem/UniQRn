@@ -7,37 +7,20 @@
   <link href="style.css" rel="stylesheet"/>
   <link rel="icon" href="/favicon.ico" />
   <script src="/env.js"></script>
-  <!-- Load Supabase client from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <!-- Initialize our Supabase client -->
   <script type="module" src="/supabaseClient.js"></script>
 </head>
 <body>
   <div id="header"></div>
   <h1>Dashboard</h1>
-  
-  <section>
-    <h2>Affiliate Codes</h2>
-    <div id="affiliate-codes">
-      <!-- Affiliate codes will be rendered here -->
-    </div>
-  </section>
-  
-  <section>
-    <h2>My Codes</h2>
-    <div id="my-codes">
-      <!-- My codes will be rendered here -->
-    </div>
-  </section>
-  
-  <section>
-    <h2>Special Codes</h2>
-    <div id="special-codes">
-      <!-- Special codes will be rendered here -->
-    </div>
-  </section>
-  
-  <!-- Load our dashboard script -->
+  <!-- Display user balances -->
+  <div id="balances"></div>
+  <!-- Search input to filter QR codes -->
+  <input id="search" type="text" placeholder="Search QR codes..." />
+  <!-- Folder tree container -->
+  <div id="folders"></div>
+  <!-- Logout button -->
+  <button onclick="logout()">Logout</button>
   <script type="module" src="/dashboard.js"></script>
   <script src="/header.js"></script>
 </body>
