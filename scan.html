@@ -60,14 +60,14 @@
     <button id="logoutBtn" onclick="logout()">Log out</button>
   </div>
 
-  <!-- Hidden input to store the QR code ID (this could also come from a URL parameter) -->
-  <input type="hidden" id="qrCodeId" value="<!-- insert QR Code ID here -->" />
+  <!-- Hidden input to store the QR code ID (populated from the URL) -->
+  <input type="hidden" id="qrCodeId" value=""/>
 
   <!-- Load our scan functionality -->
   <script type="module" src="/scan.js"></script>
   <script src="/header.js"></script>
   
-  <!-- Inline script to define login, logout, and claimQRCode -->
+  <!-- Inline script to define login, logout, and claimQRCode functions -->
   <script>
     // Stub for login – calls Supabase OAuth login
     function login() {
@@ -101,7 +101,7 @@
         qrCodeId, locationVal, redirectUrlVal, labelVal, custom1Val, activeVal, singleUseVal
       });
       
-      // Update the QR code record with registration details and mark as registered
+      // Update the QR code record with registration details and mark it as registered
       const { data, error } = await window.supabaseClient
         .from("qr_codes")
         .update({
