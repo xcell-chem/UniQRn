@@ -62,12 +62,13 @@ async function recordScan(qrCodeId, geotag, deviceInfo) {
   // Log scan event into the 'qr_scans' table
   console.log('[scan.js] Logging scan event for QR code:', qrCodeId);
   const { error } = await supabase
-    .from('qr_scans')
-    .insert([{ 
-      qr_code_id: qrCodeId, 
-      location: geotag ? JSON.stringify(geotag) : null, 
-      device_info: deviceInfo 
-    }]);
+  .from("scan_events")
+  .insert([{ 
+    qr_id: qrCodeId, 
+    ip_address: ipAddress, // Ensure ip_address is defined; if not, remove this field.
+    device_info: deviceInfo,
+    location: geotag ? JSON.stringify(geotag) : null 
+  }]);
   
   if (error) {
     console.error('[scan.js] Error logging scan event:', error);
