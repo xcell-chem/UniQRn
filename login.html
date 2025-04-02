@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - UniQRn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Load Supabase client from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+  <p>Logging in with Google…</p>
+  <script>
+    // Configure your Supabase credentials here.
+    const SUPABASE_URL = 'https://catlvxqphrmicnjzbyal.supabase.co'; // Replace with your URL.
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your anon key.
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Function to initiate the OAuth login.
+    async function initiateLogin() {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          // Redirect back to this page so we can exchange the code.
+          redirectTo: window.location.origin + window.location.pathname
+        }
+      });
+      if (error) {
+        document.body.innerHTML = "Error initiating login: " + error.message;
+      }
+    }
+
+    // Function to exchange the code for a session.
+    async function exchangeCode() {
+      try {
+        await supabase.auth.exchangeCodeForSession();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          // Redirect to the callback page with a token query parameter.
+          window.location.href = window.location.origin + "/login_callback.html?token=" + encodeURIComponent(session.user.id);
+        } else {
+          document.body.innerText = "Authentication failed. Please try again.";
+        }
+      } catch (err) {
+        console.error(err);
+        document.body.innerText = "Error during login: " + err.message;
+      }
+    }
+
+    // Check if we have an OAuth code in the URL.
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('code')) {
+      // If code exists, exchange it for a session.
+      exchangeCode();
+    } else {
+      // Otherwise, start the OAuth flow.
+      initiateLogin();
+    }
+  </script>
+</body>
+</html>
