@@ -6,21 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Load Supabase client from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Environment settings -->
+  <script src="/env.js"></script>
+  <!-- Create the Supabase client -->
+  <script src="/supabaseClient.js"></script>
 </head>
 <body>
   <p>Logging in with Google…</p>
   <script>
-    // Configure your Supabase credentials here.
-    const SUPABASE_URL = 'https://catlvxqphrmicnjzbyal.supabase.co'; // Replace with your URL.
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your anon key.
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Use the dedicated supabaseClient variable
+    const SUPABASE_URL = window.SUPABASE_URL;
+    const SUPABASE_KEY = window.SUPABASE_KEY;
+    const supabaseClient = window.supabaseClient;
 
     // Function to initiate the OAuth login.
     async function initiateLogin() {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Redirect back to this page so we can exchange the code.
+          // Redirect back to this page for token extraction.
           redirectTo: window.location.origin + window.location.pathname
         }
       });
@@ -32,11 +36,16 @@
     // Function to exchange the code for a session.
     async function exchangeCode() {
       try {
-        await supabase.auth.exchangeCodeForSession();
-        const { data: { session } } = await supabase.auth.getSession();
+        await supabaseClient.auth.exchangeCodeForSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user) {
-          // Redirect to the callback page with a token query parameter.
-          window.location.href = window.location.origin + "/login_callback.html?token=" + encodeURIComponent(session.user.id);
+          // Redirect to callback page with token, user_id, and balance.
+          const user = session.user;
+          const token = user.id; // Here we use the user id as a token; you may use another field.
+          const balance = 100.0; // Replace with actual balance if available.
+          window.location.href = window.location.origin + "/login_callback.html?token=" + encodeURIComponent(token) +
+                                   "&user_id=" + encodeURIComponent(user.id) +
+                                   "&balance=" + encodeURIComponent(balance);
         } else {
           document.body.innerText = "Authentication failed. Please try again.";
         }
@@ -46,13 +55,11 @@
       }
     }
 
-    // Check if we have an OAuth code in the URL.
+    // Check if the URL has an OAuth code.
     const params = new URLSearchParams(window.location.search);
     if (params.has('code')) {
-      // If code exists, exchange it for a session.
       exchangeCode();
     } else {
-      // Otherwise, start the OAuth flow.
       initiateLogin();
     }
   </script>
