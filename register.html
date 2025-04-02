@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Registration | UniQRn</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Load Supabase client from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="/env.js"></script>
+  <script src="/supabaseClient.js"></script>
+</head>
+<body>
+  <h1>Register</h1>
+  <form id="registrationForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit" id="registerButton">Register</button>
+  </form>
+
+  <script>
+    // Utility to parse cookies (if needed for referral, etc.)
+    function parseCookies() {
+      return document.cookie.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.split('=').map(c => c.trim());
+        acc[key] = value;
+        return acc;
+      }, {});
+    }
+
+    async function registerUser(event) {
+      event.preventDefault();
+      
+      console.log('[registration] Starting registration process.');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      console.log('[registration] Email:', email);
+
+      const cookies = parseCookies();
+      const referralUserId = cookies.referral_user || null;
+      if (referralUserId) {
+        console.log('[registration] Found referral cookie:', referralUserId);
+      } else {
+        console.log('[registration] No referral cookie found.');
+      }
+
+      // Sign up using Supabase auth
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        console.error('[registration] Registration error:', error);
+        alert("Registration failed: " + error.message);
+        return;
+      }
+      console.log('[registration] Registration successful:', data);
+
+      // Optionally update user record with referral info if desired.
+      if (data.user && referralUserId) {
+        console.log('[registration] Updating user record with parent_id:', referralUserId);
+        const { error: updateError } = await supabaseClient
+          .from('app_users')
+          .update({ parent_id: referralUserId })
+          .eq('id', data.user.id);
+        if (updateError) {
+          console.error('[registration] Error updating parent_id:', updateError);
+        } else {
+          console.log('[registration] User parent_id updated successfully.');
+        }
+      }
+      alert('Registration successful!');
+
+      // Wait a moment for session to be available
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Retrieve the session
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        const token = session.user.id;
+        const user_id = session.user.id;
+        const balance = 100.0; // Replace with real balance retrieval if available.
+        // Redirect to login_callback.html with query parameters
+        const redirectUrl = window.location.origin + "/login_callback.html?token=" 
+                            + encodeURIComponent(token) +
+                            "&user_id=" + encodeURIComponent(user_id) +
+                            "&balance=" + encodeURIComponent(balance);
+        window.location.replace(redirectUrl);
+      } else {
+        alert("Could not retrieve session after registration.");
+      }
+    }
+
+    document.getElementById('registrationForm').addEventListener('submit', registerUser);
+  </script>
+</body>
+</html>

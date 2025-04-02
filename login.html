@@ -21,7 +21,7 @@
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Redirect to our callback page explicitly
+          // Redirect to our login callback page explicitly
           redirectTo: "https://uniqrn.co.uk/login_callback.html"
         }
       });
@@ -30,13 +30,10 @@
       }
     }
 
-    // Check if the URL has an OAuth code; if not, start the login flow.
+    // If no OAuth code is present, start the login flow.
     const params = new URLSearchParams(window.location.search);
     if (!params.has('code')) {
       initiateLogin();
-    } else {
-      // If a code is present, let Supabase handle the exchange.
-      // The callback page (login_callback.html) will handle building the final URL.
     }
   </script>
 </body>
