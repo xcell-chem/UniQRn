@@ -4,14 +4,41 @@
   <meta charset="UTF-8">
   <title>Login Callback - UniQRn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Load Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="/env.js"></script>
+  <script src="/supabaseClient.js"></script>
 </head>
 <body>
-  <p>Login successful. You may close this window.</p>
+  <p>Login successful. Processing...</p>
   <script>
-    // Optionally auto-close after a few seconds.
+    const supabaseClient = window.supabaseClient;
+    async function getSessionAndRedirect() {
+      // Wait a short moment to ensure session is available.
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        const token = session.user.id;  // Here we use the user ID as the token.
+        const user_id = session.user.id;
+        const balance = 100.0;  // Replace with actual balance retrieval if available.
+        // Construct a new URL with query parameters.
+        const newUrl = window.location.origin + window.location.pathname +
+                       "?token=" + encodeURIComponent(token) +
+                       "&user_id=" + encodeURIComponent(user_id) +
+                       "&balance=" + encodeURIComponent(balance);
+        window.location.replace(newUrl);
+      } else {
+        document.body.innerText = "Session not available. Please try again.";
+      }
+    }
+    // If there's a fragment (which Supabase returns), process it.
+    if (window.location.hash) {
+      getSessionAndRedirect();
+    }
+    // Optionally auto-close the window after 5 seconds.
     setTimeout(() => {
       window.close();
-    }, 3000);
+    }, 5000);
   </script>
 </body>
 </html>

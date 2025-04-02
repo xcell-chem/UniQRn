@@ -15,52 +15,28 @@
   <p>Logging in with Google…</p>
   <script>
     // Use the dedicated supabaseClient variable
-    const SUPABASE_URL = window.SUPABASE_URL;
-    const SUPABASE_KEY = window.SUPABASE_KEY;
     const supabaseClient = window.supabaseClient;
 
-    // Function to initiate the OAuth login.
     async function initiateLogin() {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Redirect back to this page for token extraction.
+          // Redirect to our callback page explicitly
           redirectTo: "https://uniqrn.co.uk/login_callback.html"
-         }
+        }
       });
       if (error) {
         document.body.innerHTML = "Error initiating login: " + error.message;
       }
     }
 
-    // Function to exchange the code for a session.
-    async function exchangeCode() {
-      try {
-        await supabaseClient.auth.exchangeCodeForSession();
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-          // Redirect to callback page with token, user_id, and balance.
-          const user = session.user;
-          const token = user.id; // Here we use the user id as a token; you may use another field.
-          const balance = 100.0; // Replace with actual balance if available.
-          window.location.href = window.location.origin + "/login_callback.html?token=" + encodeURIComponent(token) +
-                                   "&user_id=" + encodeURIComponent(user.id) +
-                                   "&balance=" + encodeURIComponent(balance);
-        } else {
-          document.body.innerText = "Authentication failed. Please try again.";
-        }
-      } catch (err) {
-        console.error(err);
-        document.body.innerText = "Error during login: " + err.message;
-      }
-    }
-
-    // Check if the URL has an OAuth code.
+    // Check if the URL has an OAuth code; if not, start the login flow.
     const params = new URLSearchParams(window.location.search);
-    if (params.has('code')) {
-      exchangeCode();
-    } else {
+    if (!params.has('code')) {
       initiateLogin();
+    } else {
+      // If a code is present, let Supabase handle the exchange.
+      // The callback page (login_callback.html) will handle building the final URL.
     }
   </script>
 </body>
