@@ -16,6 +16,7 @@
   
   <!-- Code creation form -->
   <div id="createForm">
+    <div id="feedback" class="feedback" style="display:none;"></div>
     <label>
       Label/Folder:
       <input id="label" type="text" placeholder="e.g. ads/mirrors"/>
@@ -37,6 +38,11 @@
     </label>
     <br/>
     <label>
+      Quantity:
+      <input id="quantity" type="number" placeholder="Enter quantity" min="1" value="1"/>
+    </label>
+    <br/>
+    <label>
       <input type="checkbox" id="active" checked/> Mark QR as active
     </label>
     <br/>
@@ -44,7 +50,11 @@
       <input type="checkbox" id="single_use"/> Make single-use only
     </label>
     <br/>
-    <button id="createCodeBtn">Create Code</button>
+    <label>
+      <input type="checkbox" id="pre_register"/> Pre-register code (available for affiliates)
+    </label>
+    <br/>
+    <button id="createCodeBtn">Create Code(s)</button>
   </div>
   
   <!-- Container for displaying generated codes -->
