@@ -44,17 +44,20 @@
       <input id="quantity" type="number" placeholder="Enter quantity" min="1" value="1"/>
     </label>
     <br/>
-    <label>
-      <input type="checkbox" id="active" checked/> Mark QR as active
-    </label>
-    <br/>
-    <label>
-      <input type="checkbox" id="single_use"/> Make single-use only
-    </label>
-    <br/>
-    <label>
-      <input type="checkbox" id="pre_register"/> Pre-register code (for affiliates)
-    </label>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="active" checked />
+      <label for="active">Mark QR as active</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="single_use" />
+      <label for="single_use">Make single-use only</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="pre_register" />
+      <label for="pre_register">Pre-register code (for affiliates)</label>
+    </div>
+    
     <br/>
     <button id="createCodeBtn">Create Code(s)</button>
   </div>
