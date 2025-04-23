@@ -42,18 +42,7 @@ async function createCodes() {
   for (let i = 0; i < quantityVal; i++) {
     const { data, error } = await supabase
       .from("qr_codes")
-      .insert([{
-        owner_id: ownerId,
-        label: labelVal,
-        redirect_url: redirectUrlVal,
-        shared_location: locationVal,
-        custom_1: custom1Val,
-        active: activeVal,
-        single_use: singleUseVal,
-        registered: preRegisterVal ? true : false,
-        created_by: ownerId
-      }])
-      .single();
+      .insert([{ owner_id: ownerId, label: labelVal, redirect_url: redirectUrlVal, shared_location: locationVal, custom_1: custom1Val, active: activeVal, single_use: singleUseVal, registered: preRegisterVal ? true : false, created_by: ownerId }]).select();
     
     if (error) {
       console.error(`[create.js] Error creating code (iteration ${i}):`, error);
@@ -61,7 +50,7 @@ async function createCodes() {
       continue;
     }
     console.log(`[create.js] Code created successfully (iteration ${i}):`, data);
-    createdCodes.push(data);
+    if (data && data.length > 0) createdCodes.push(data[0]);
   }
   
   if (createdCodes.length > 0) {
