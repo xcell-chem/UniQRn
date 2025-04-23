@@ -51,8 +51,6 @@ async function processQRCode(qrCodeId, geotag, deviceInfo, ipAddress) {
   }
   
   const qrCode = qrData;
-console.log("[DEBUG] QR Registered:", qrCode.registered);
-console.log("[DEBUG] QR Owner ID:", qrCode.owner_id);
   console.log("[scan.js] Retrieved QR code details:", qrCode);
   
   // If the QR code is not registered, prompt login/registration.
@@ -81,7 +79,7 @@ console.log("[DEBUG] QR Owner ID:", qrCode.owner_id);
       qr_code_id: qrCodeId, 
       ip_address: ipAddress || null, 
       device_info: deviceInfo || null,
-      location: geotag ? JSON.stringify(geotag) : null 
+      geotag: geotag || null 
     }]);
   if (insertError) {
     console.error("[scan.js] Error inserting scan event:", insertError);
@@ -99,11 +97,7 @@ console.log("[DEBUG] QR Owner ID:", qrCode.owner_id);
   }
   
   // Redirect the user.
-  console.log("[DEBUG] Redirecting in 3 seconds...");
-  setTimeout(() => {
-    window.location.href = redirectUrl;
-  }, 3000);
-  
+  window.location.href = redirectUrl;
 }
 
 // Automatically process the QR code when the page loads (if provided via URL)
