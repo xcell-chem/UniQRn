@@ -10,12 +10,15 @@
   <script src="/supabaseClient.js"></script>
 </head>
 <body>
-  <h1>Register</h1>
+  <div id="header"></div>
+  <div class="container center-form">
+  <h1 class="homepage-text">Register Your Account</h1>
   <form id="registrationForm">
     <input type="email" id="email" placeholder="Email" required>
     <input type="password" id="password" placeholder="Password" required>
     <button type="submit" id="registerButton">Register</button>
   </form>
+  </div>
 
   <script>
     // Utility to parse cookies (if needed for referral, etc.)
