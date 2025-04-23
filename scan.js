@@ -51,6 +51,8 @@ async function processQRCode(qrCodeId, geotag, deviceInfo, ipAddress) {
   }
   
   const qrCode = qrData;
+console.log("[DEBUG] QR Registered:", qrCode.registered);
+console.log("[DEBUG] QR Owner ID:", qrCode.owner_id);
   console.log("[scan.js] Retrieved QR code details:", qrCode);
   
   // If the QR code is not registered, prompt login/registration.
