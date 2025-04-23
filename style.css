@@ -316,3 +316,33 @@ header, #balances {
   color: black;
   text-align: center;
 }
+
+
+/* Enhance form container */
+#createForm {
+  background-color: #142738;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+/* Align checkbox label and input */
+.checkbox-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+/* Center QR previews in a grid */
+.qr-preview-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  justify-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
