@@ -99,7 +99,11 @@ console.log("[DEBUG] QR Owner ID:", qrCode.owner_id);
   }
   
   // Redirect the user.
-  window.location.href = redirectUrl;
+  console.log("[DEBUG] Redirecting in 3 seconds...");
+  setTimeout(() => {
+    window.location.href = redirectUrl;
+  }, 3000);
+  
 }
 
 // Automatically process the QR code when the page loads (if provided via URL)
