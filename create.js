@@ -78,8 +78,9 @@ function displayCode(code) {
   // Generate the QR code preview URL using a free API.
   // Here, we encode the code's id (you can adjust to encode other data if needed).
   const dataToEncode = code.id;
-  const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(dataToEncode)}&size=150x150`;
-  console.log("[create.js] Generated QR preview URL for code", code.id, ":", qrPreviewUrl);
+  const qrUrl = `https://uniqrn.co.uk/scan?id=${encodeURIComponent(code.id)}`;
+const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrUrl)}&size=150x150`;
+console.log("[create.js] Generated QR preview URL for code", code.id, ":", qrPreviewUrl);
   
   // Create the code item container.
   const codeElement = document.createElement("div");
