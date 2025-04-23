@@ -54,7 +54,7 @@ async function processQRCode(qrCodeId, geotag, deviceInfo, ipAddress) {
   console.log("[scan.js] Retrieved QR code details:", qrCode);
   
   // If the QR code is not registered, prompt login/registration.
-  if (!qrCode.registered) {
+  if (!qrCode.registered || !qrCode.owner_id) {
     console.log("[scan.js] QR code is not registered. Prompting for login/registration.");
     // Show the login and registration form.
     document.getElementById("login").style.display = "block";
