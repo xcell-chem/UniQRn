@@ -269,8 +269,34 @@ header, #balances {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
-  text-align: left;
+  padding: 30px;
+  background-color: #1f2d3d;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  color: #ffffff;
+}
+
+.center-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.center-form input[type="text"],
+.center-form input[type="url"],
+.center-form input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  border-radius: 5px;
+  border: none;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
 }
 
 .qr-preview-list {
@@ -286,5 +312,7 @@ header, #balances {
   padding: 10px;
   border-radius: 8px;
   width: 200px;
+  background: white;
+  color: black;
   text-align: center;
 }
