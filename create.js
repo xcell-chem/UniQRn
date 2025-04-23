@@ -151,3 +151,14 @@ async function loadUserCodes() {
 
 // Uncomment to load existing codes on page load:
 // window.addEventListener("DOMContentLoaded", loadUserCodes);
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("createCodeBtn").addEventListener("click", async () => {
+    console.log("[create.js] Create Code(s) button clicked.");
+    const codes = await createCodes();
+    if (codes && codes.length > 0) {
+      codes.filter(code => code !== null).forEach(displayCode);
+    }
+  });
+});
