@@ -89,6 +89,16 @@
     // Stub for claimQRCode – processes the registration form for an unregistered QR code
     async function claimQRCode() {
       console.log("[scan.html] claimQRCode() called");
+
+      // Get the current user ID from session
+      const { data: sessionData } = await window.supabaseClient.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+
+      if (!userId) {
+        alert("You must be logged in to register a QR code.");
+        return;
+      }
+      console.log("[scan.html] claimQRCode() called");
       const locationVal = document.getElementById("location").value;
       const redirectUrlVal = document.getElementById("redirect_url").value;
       const labelVal = document.getElementById("label").value;
@@ -104,7 +114,7 @@
       // Update the QR code record with registration details and mark it as registered
       const { data, error } = await window.supabaseClient
         .from("qr_codes")
-        .update({
+        .update({ owner_id: userId,
           shared_location: locationVal,
           redirect_url: redirectUrlVal,
           label: labelVal,
