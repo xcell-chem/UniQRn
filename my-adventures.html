@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,54 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Adventures | UniQRn</title>
   <link rel="stylesheet" href="/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script type="module" src="/supabaseClient.js"></script>
-  <style>
-    body {
-      background: #1a1a2e;
-      color: gold;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 2rem;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-    }
-    ul#adventureList {
-      list-style: none;
-      padding: 0;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    ul#adventureList li {
-      background: #0f172a;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      text-align: left;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-    .title {
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .type {
-      font-style: italic;
-      color: #f0e68c;
-    }
-  </style>
-</head>
-<body>
-  <h1>My Adventures</h1>
-  <ul id="adventureList"></ul>
+  <script src="/env.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  <script>
-    const supabase = window.supabaseClient;
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
 
-    async function loadAdventures() {
+    window.addEventListener("DOMContentLoaded", async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData?.session?.user?.id;
+
       if (!userId) {
         document.body.innerHTML = '<p>Please log in to view your adventures.</p>';
         return;
@@ -70,22 +38,42 @@
         return;
       }
 
-      const list = document.getElementById('adventureList');
+      const list = document.createElement('ul');
+      list.style.listStyle = 'none';
+      list.style.padding = '0';
+      list.style.maxWidth = '600px';
+      list.style.margin = '0 auto';
+
       if (data.length === 0) {
         list.innerHTML = '<p>You haven\'t created any adventures yet.</p>';
-        return;
+      } else {
+        list.innerHTML = data.map(a => `
+          <li style="background:#0f172a;border-radius:10px;margin-bottom:1rem;padding:1rem;text-align:left;box-shadow:0 0 10px rgba(0,0,0,0.3);">
+            <div style="font-weight:bold;font-size:1.2rem;">${a.title}</div>
+            <div style="font-style:italic;color:#f0e68c;">Type: ${a.adventure_type}</div>
+            <div>${a.description || ''}</div>
+          </li>
+        `).join('');
       }
 
-      list.innerHTML = data.map(a => `
-        <li>
-          <div class="title">${a.title}</div>
-          <div class="type">Type: ${a.adventure_type}</div>
-          <div>${a.description || ''}</div>
-        </li>
-      `).join('');
-    }
-
-    window.addEventListener("DOMContentLoaded", loadAdventures);
+      document.body.appendChild(list);
+    });
   </script>
+  <style>
+    body {
+      background: #1a1a2e;
+      color: gold;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Adventures</h1>
 </body>
 </html>
