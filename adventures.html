@@ -115,44 +115,7 @@
         alert("Adventure created but failed to generate QR codes.");
       }
 
-      entries.push({
-        adventure_id: adventure.id,
-        step_number: 0,
-        qr_code_id: String(crypto.randomUUID()),
-        clue: 'Welcome! Scan to start.',
-        label: 'start',
-        geotag: {}
-      });
-
-      // Middle QRs
-      for (let i = 1; i <= qrCount; i++) {
-        entries.push({
-          adventure_id: adventure.id,
-          step_number: i,
-          qr_code_id: String(crypto.randomUUID()),
-          clue: '',
-          label: `step-${i}`,
-          geotag: {}
-        });
-      }
-
-      // Finish QR
-      entries.push({
-        adventure_id: adventure.id,
-        step_number: qrCount + 1,
-        qr_code_id: String(crypto.randomUUID()),
-        clue: 'Scan to finish and see leaderboard!',
-        label: 'finish',
-        geotag: {}
-      });
-
-      const { error: qrError } = await supabase
-        .from('qr_adventure_data')
-        .insert(entries);
-
-      if (qrError) {
-        alert("Adventure created but failed to generate QR codes.");
-      }
+      
 
       window.location.href = "/my-adventures.html";
     }
