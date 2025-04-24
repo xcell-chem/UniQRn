@@ -103,7 +103,13 @@
 
       const { error: qrError } = await supabase
         .from('qr_adventure_data')
-        .insert(qrCodeEntries);
+        .insert(qrCodeEntries).select();
+
+      console.log("Final QR entries to insert into qr_adventure_data:", qrCodeEntries);
+      if (qrError) {
+        console.error("QR insert error details:", qrError);
+      }
+    
 
       if (qrError) {
         alert("Adventure created but failed to generate QR codes.");
