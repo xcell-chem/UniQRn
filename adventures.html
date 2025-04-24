@@ -6,12 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UniQRn Adventures</title>
   <link href="/style.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    const SUPABASE_URL = "https://tjbcucdewwczndkeypey.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmN1Y2Rld3djem5ka2V5cGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MzUwMzcsImV4cCI6MjA1MzUxMTAzN30.iBm2u7xY5qRQT6gOQw7OwAYTENJh49B9lI0YtLuKJAQ";
-    const supabase = window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  </script>
   <style>
     body {
       background: #1a1a2e;
@@ -94,7 +88,11 @@
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
 
-  <script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient("https://tjbcucdewwczndkeypey.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmN1Y2Rld3djem5ka2V5cGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MzUwMzcsImV4cCI6MjA1MzUxMTAzN30.iBm2u7xY5qRQT6gOQw7OwAYTENJh49B9lI0YtLuKJAQ");
+    window.supabaseClient = supabase;
+
     const descriptions = {
       orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
       easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
@@ -102,13 +100,13 @@
       qrGo: "Direction and distance only — find your way using compass navigation style."
     };
 
-    function showOptions() {
+    window.showOptions = function() {
       const type = document.getElementById('adventureType').value;
       const description = document.getElementById('typeDescription');
       description.innerText = descriptions[type] || '';
-    }
+    };
 
-    async function submitAdventure() {
+    window.submitAdventure = async function () {
       const title = document.getElementById('adventureTitle').value.trim();
       const description = document.getElementById('adventureDescription').value.trim();
       const type = document.getElementById('adventureType').value;
