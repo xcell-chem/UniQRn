@@ -75,10 +75,10 @@
       entries.push({
         adventure_id: adventure.id,
         step_number: 0,
-        qr_code_id: crypto.randomUUID(),
+        qr_code_id: String(crypto.randomUUID()),
         clue: 'Welcome! Scan to start.',
         label: 'start',
-        geotag: null
+        geotag: {}
       });
 
       // Middle QRs
@@ -86,10 +86,10 @@
         entries.push({
           adventure_id: adventure.id,
           step_number: i,
-          qr_code_id: crypto.randomUUID(),
+          qr_code_id: String(crypto.randomUUID()),
           clue: '',
           label: `step-${i}`,
-          geotag: null
+          geotag: {}
         });
       }
 
@@ -97,10 +97,10 @@
       entries.push({
         adventure_id: adventure.id,
         step_number: qrCount + 1,
-        qr_code_id: crypto.randomUUID(),
+        qr_code_id: String(crypto.randomUUID()),
         clue: 'Scan to finish and see leaderboard!',
         label: 'finish',
-        geotag: null
+        geotag: {}
       });
 
       const { error: qrError } = await supabase
