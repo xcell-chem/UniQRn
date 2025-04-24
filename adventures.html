@@ -69,9 +69,46 @@
         return;
       }
 
-      const entries = [];
+      // QR logic replaced by dynamic insert above
 
-      // Start QR
+      
+      const qrCodeEntries = [];
+
+      for (let i = 0; i <= qrCount + 1; i++) {
+        const { data: qrCode, error: qrCodeError } = await supabase
+          .from('qr_codes')
+          .insert({})
+          .select()
+          .single();
+
+        if (qrCodeError || !qrCode) {
+          console.error("QR code creation failed", qrCodeError);
+          alert("Failed to create QR code.");
+          return;
+        }
+
+        const step = i === 0 ? 0 : i === qrCount + 1 ? qrCount + 1 : i;
+        const label = i === 0 ? 'start' : i === qrCount + 1 ? 'finish' : `step-${i}`;
+
+        qrCodeEntries.push({
+          adventure_id: adventure.id,
+          step_number: step,
+          qr_code_id: qrCode.id,
+          clue: i === 0 ? 'Welcome! Scan to start.' :
+                i === qrCount + 1 ? 'Scan to finish and see leaderboard!' : '',
+          label,
+          geotag: {}
+        });
+      }
+
+      const { error: qrError } = await supabase
+        .from('qr_adventure_data')
+        .insert(qrCodeEntries);
+
+      if (qrError) {
+        alert("Adventure created but failed to generate QR codes.");
+      }
+
       entries.push({
         adventure_id: adventure.id,
         step_number: 0,
