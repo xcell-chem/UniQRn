@@ -5,12 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UniQRn Adventures</title>
   <link href="/style.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js">
+  function loginWithGoogle() {
+    window.supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href
+      }
+    });
+  }
+</script>
+
   <script>
   window.SUPABASE_URL = "https://tjbcucdewwczndkeypey.supabase.co";
   window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmN1Y2Rld3djem5ka2V5cGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MzUwMzcsImV4cCI6MjA1MzUxMTAzN30.iBm2u7xY5qRQT6gOQw7OwAYTENJh49B9lI0YtLuKJAQ";
   window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+  function loginWithGoogle() {
+    window.supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href
+      }
+    });
+  }
 </script>
+
   <style>
     body {
       background: #1a1a2e;
@@ -70,6 +90,7 @@
   </style>
 </head>
 <body>
+  <button onclick="loginWithGoogle()" style="position: absolute; top: 1rem; right: 1rem;">Login with Google</button>
   <h1>Design Your Adventure</h1>
   <p>
     Use this tool to create location-based experiences for orienteering, treasure hunts,
@@ -188,6 +209,16 @@
 
       window.location.href = "/my-adventures.html";
     }
-  </script>
+  
+  function loginWithGoogle() {
+    window.supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
