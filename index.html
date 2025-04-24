@@ -60,19 +60,17 @@
   <h1 class="homepage-text">Welcome to UniQRn</h1>
   <img alt="UniQRn Logo" class="logo" src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//logo.png">
   <p>
-    <strong>UniQRn</strong>- Reach new customers, or simply get paid to share stickers and links! 
+    <strong>UniQRn</strong> — Reach new customers, or simply get paid to share stickers and links! 
     <br><br>
-      Earn coins and cash commisions, every time your code is scanned,<br>
-      someone signs-up, or interacts with our affiliates.  
-      <br>
-      -Coming soon
-      <br><br>
-      UniQRn is a print software and web based track and manage solution for individually identifiable QR codes .<br>
-      Perfect for creators, marketers, and businesses — UniQRn helps engage your community like never before,
-      <br> and most importantly, reduces your costs by letting you know what works and what doesn't! 
-    </p>
+    Earn coins and cash commissions every time your code is scanned, someone signs up, or interacts with our affiliates.
+    <br><br>
+    UniQRn is a print software and web-based track-and-manage solution for individually identifiable QR codes.
+    <br>
+    Perfect for creators, marketers, and businesses — UniQRn helps engage your community like never before,
+    and most importantly, reduces your costs by letting you know what works and what doesn't!
+  </p>
   <div class="buttons">
-    <button onclick="loginWithGoogle()">Register with Google</button>
+    <button onclick="openLoginPopup()">Register with Google</button>
     <a href="/dashboard.html">View My Codes</a>
     <a href="/create.html">Create Codes</a>
   </div>
@@ -83,14 +81,16 @@
   <script src="/header.js"></script>
 
   <script>
-    function loginWithGoogle() {
-      const supabase = window.supabaseClient;
-      supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'https://uniqrn.co.uk/login_callback.html'
-        }
-      });
+    function openLoginPopup() {
+      const width = 500;
+      const height = 600;
+      const left = (screen.width - width) / 2;
+      const top = (screen.height - height) / 2;
+      window.open(
+        '/login.html',
+        'LoginPopup',
+        `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars=yes,status=1`
+      );
     }
   </script>
 </body>
