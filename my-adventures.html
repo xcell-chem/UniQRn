@@ -2,8 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Adventures | UniQRn</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="/env.js"></script>
@@ -38,25 +38,19 @@
         return;
       }
 
-      const list = document.createElement('ul');
-      list.style.listStyle = 'none';
-      list.style.padding = '0';
-      list.style.maxWidth = '600px';
-      list.style.margin = '0 auto';
-
-      if (data.length === 0) {
-        list.innerHTML = '<p>You haven\'t created any adventures yet.</p>';
-      } else {
-        list.innerHTML = data.map(a => `
-          <li style="background:#0f172a;border-radius:10px;margin-bottom:1rem;padding:1rem;text-align:left;box-shadow:0 0 10px rgba(0,0,0,0.3);">
-            <div style="font-weight:bold;font-size:1.2rem;">${a.title}</div>
-            <div style="font-style:italic;color:#f0e68c;">Type: ${a.adventure_type}</div>
-            <div>${a.description || ''}</div>
-          </li>
-        `).join('');
+      const list = document.getElementById('adventureList');
+      if (!data.length) {
+        list.innerHTML = "<p>You haven't created any adventures yet.</p>";
+        return;
       }
 
-      document.body.appendChild(list);
+      list.innerHTML = data.map(a => `
+        <li>
+          <div class="title"><a href="/adventure.html?id=${a.id}">${a.title}</a></div>
+          <div class="type">Type: ${a.adventure_type}</div>
+          <div>${a.description || ''}</div>
+        </li>
+      `).join('');
     });
   </script>
   <style>
@@ -71,9 +65,32 @@
       font-size: 2rem;
       margin-bottom: 1.5rem;
     }
+    ul#adventureList {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    ul#adventureList li {
+      background: #0f172a;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .title {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .type {
+      font-style: italic;
+      color: #f0e68c;
+    }
   </style>
 </head>
 <body>
   <h1>My Adventures</h1>
+  <ul id="adventureList"></ul>
 </body>
 </html>
