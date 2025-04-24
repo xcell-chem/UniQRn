@@ -1,2 +1,69 @@
 
-<!-- Placeholder: Adventures Page content will go here (refetch from canvas if needed) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UniQRn Adventures</title>
+  <link href="/style.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="/supabaseClient.js"></script>
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: 'Segoe UI', sans-serif; padding: 2rem; text-align: center; }
+    .form-container { max-width: 600px; margin: 2rem auto; background: #0f172a; padding: 2rem; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.4); text-align: left; }
+    label, select { display: block; margin-top: 1rem; font-size: 1rem; }
+    select, input, textarea { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; border: none; font-size: 1rem; }
+    button { margin-top: 1.5rem; background-color: #00adb5; color: white; font-weight: bold; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    .type-description { margin-top: 1rem; font-style: italic; color: #f0e68c; }
+  </style>
+</head>
+<body>
+  <h1>Design Your Adventure</h1>
+  <p>Create your own location-based adventure. Pick a type, give it a name, and start building!</p>
+  <div class="form-container">
+    <label for="adventureTitle">Adventure Title:</label>
+    <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail">
+    <label for="adventureDescription">Description (optional):</label>
+    <textarea id="adventureDescription" placeholder="A fun educational trail..."></textarea>
+    <label for="adventureType">Adventure Type:</label>
+    <select id="adventureType" onchange="showOptions()">
+      <option value="">-- Select an Adventure Type --</option>
+      <option value="orienteering">Orienteering</option>
+      <option value="easterEgg">Easter Egg Hunt</option>
+      <option value="qrGo">UniQRn Go</option>
+    </select>
+    <div id="typeDescription" class="type-description"></div>
+    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
+    <button onclick="submitAdventure()">Create Adventure</button>
+  </div>
+
+  <script>
+    const supabase = window.supabaseClient;
+    const descriptions = {
+      orienteering: "Visit checkpoints in order using map navigation.",
+      easterEgg: "Hunt scattered QR codes in any order.",
+      qrGo: "Follow only distance and direction to reach the next point."
+    };
+
+    function showOptions() {
+      const type = document.getElementById('adventureType').value;
+      document.getElementById('typeDescription').innerText = descriptions[type] || '';
+      const container = document.getElementById('dynamicOptions');
+      container.innerHTML = '';
+    }
+
+    async function submitAdventure() {
+      const title = document.getElementById('adventureTitle').value.trim();
+      const description = document.getElementById('adventureDescription').value.trim();
+      const type = document.getElementById('adventureType').value;
+      if (!title || !type) return alert("Please enter title and type.");
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      if (!userId) return alert("Login required.");
+      const { error } = await supabase.from('adventures').insert({ title, description, adventure_type: type, created_by: userId });
+      if (error) return alert("Failed to create adventure.");
+      window.location.href = "/my-adventures.html";
+    }
+  </script>
+</body>
+</html>

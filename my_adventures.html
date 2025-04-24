@@ -1,2 +1,38 @@
 
-<!-- Placeholder: My Adventures Page content will go here (refetch from canvas if needed) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Adventures</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="/supabaseClient.js"></script>
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: 'Segoe UI', sans-serif; padding: 2rem; text-align: center; }
+    h1 { font-size: 2rem; margin-bottom: 1.5rem; }
+    ul#adventureList { list-style: none; padding: 0; max-width: 600px; margin: 0 auto; }
+    li { background: #0f172a; border-radius: 10px; margin-bottom: 1rem; padding: 1rem; text-align: left; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+    .title { font-weight: bold; font-size: 1.2rem; }
+    .type { font-style: italic; color: #f0e68c; }
+  </style>
+</head>
+<body>
+  <h1>My Adventures</h1>
+  <ul id="adventureList"></ul>
+  <script>
+    const supabase = window.supabaseClient;
+    async function loadAdventures() {
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      if (!userId) return document.body.innerHTML = "<p>Please log in to view your adventures.</p>";
+      const { data, error } = await supabase.from('adventures').select('*').eq('created_by', userId).order('created_at', { ascending: false });
+      if (error) return alert("Error loading adventures.");
+      const list = document.getElementById('adventureList');
+      if (data.length === 0) return list.innerHTML = "<p>No adventures yet.</p>";
+      list.innerHTML = data.map(a => `<li><div class="title">${a.title}</div><div class="type">Type: ${a.adventure_type}</div><div>${a.description || ''}</div></li>`).join('');
+    }
+    window.addEventListener("DOMContentLoaded", loadAdventures);
+  </script>
+</body>
+</html>
