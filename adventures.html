@@ -15,7 +15,6 @@
         detectSessionInUrl: true
       }
     });
-    window.supabaseClient = supabase;
 
     const descriptions = {
       orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
@@ -34,9 +33,10 @@
       const title = document.getElementById('adventureTitle').value.trim();
       const description = document.getElementById('adventureDescription').value.trim();
       const type = document.getElementById('adventureType').value;
+      const numQRCodes = parseInt(document.getElementById('qrCount').value);
 
-      if (!title || !type) {
-        alert("Please enter a title and select an adventure type.");
+      if (!title || !type || isNaN(numQRCodes) || numQRCodes < 1) {
+        alert("Please enter all required fields and a valid number of QR codes.");
         return;
       }
 
@@ -48,32 +48,70 @@
           if (session?.session?.user?.id) {
             clearInterval(checkLogin);
             popup?.close();
-            proceedAdventureCreation(session.session.user.id);
+            proceedAdventureCreation(session.session.user.id, title, description, type, numQRCodes);
           }
         }, 1000);
         return;
       }
 
-      proceedAdventureCreation(sessionData.session.user.id);
+      proceedAdventureCreation(sessionData.session.user.id, title, description, type, numQRCodes);
     }
 
-    async function proceedAdventureCreation(userId) {
-      const title = document.getElementById('adventureTitle').value.trim();
-      const description = document.getElementById('adventureDescription').value.trim();
-      const type = document.getElementById('adventureType').value;
+    async function proceedAdventureCreation(userId, title, description, type, qrCount) {
+      const { data: adventure, error } = await supabase
+        .from('adventures')
+        .insert({ title, description, adventure_type: type, created_by: userId })
+        .select()
+        .single();
 
-      const { error } = await supabase.from('adventures').insert({
-        title,
-        description,
-        adventure_type: type,
-        created_by: userId
+      if (error || !adventure) {
+        alert("Failed to create adventure.");
+        return;
+      }
+
+      const entries = [];
+
+      // Start QR
+      entries.push({
+        adventure_id: adventure.id,
+        step_number: 0,
+        qr_code_id: crypto.randomUUID(),
+        clue: 'Welcome! Scan to start.',
+        label: 'start',
+        geotag: null
       });
 
-      if (error) {
-        alert("Failed to create adventure.");
-      } else {
-        window.location.href = "/my-adventures.html";
+      // Middle QRs
+      for (let i = 1; i <= qrCount; i++) {
+        entries.push({
+          adventure_id: adventure.id,
+          step_number: i,
+          qr_code_id: crypto.randomUUID(),
+          clue: '',
+          label: `step-${i}`,
+          geotag: null
+        });
       }
+
+      // Finish QR
+      entries.push({
+        adventure_id: adventure.id,
+        step_number: qrCount + 1,
+        qr_code_id: crypto.randomUUID(),
+        clue: 'Scan to finish and see leaderboard!',
+        label: 'finish',
+        geotag: null
+      });
+
+      const { error: qrError } = await supabase
+        .from('qr_adventure_data')
+        .insert(entries);
+
+      if (qrError) {
+        alert("Adventure created but failed to generate QR codes.");
+      }
+
+      window.location.href = "/my-adventures.html";
     }
   </script>
   <style>
@@ -109,8 +147,10 @@
   <div class="form-container">
     <label for="adventureTitle">Adventure Title:</label>
     <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail for Year 6">
+
     <label for="adventureDescription">Description (optional):</label>
     <textarea id="adventureDescription" placeholder="e.g. A fun, educational trail across the school field."></textarea>
+
     <label for="adventureType">Adventure Type:</label>
     <select id="adventureType" onchange="showOptions()">
       <option value="">-- Select an Adventure Type --</option>
@@ -120,15 +160,11 @@
       <option value="qrGo">UniQRn Go</option>
     </select>
     <div id="typeDescription" class="type-description"></div>
+
+    <label for="qrCount">How many QR checkpoints (excluding Start/Finish)?</label>
+    <input id="qrCount" type="number" min="1" placeholder="e.g. 5">
+
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
-
-<script>
-  const list = document.getElementById("adventure-list");
-  if (list && list.children.length === 0) {
-    document.getElementById("no-adventure-list").style.display = "block";
-  }
-</script>
 </body>
-
 </html>
