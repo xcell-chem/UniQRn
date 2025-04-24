@@ -122,5 +122,13 @@
     <div id="typeDescription" class="type-description"></div>
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
+
+<script>
+  const list = document.getElementById("adventure-list");
+  if (list && list.children.length === 0) {
+    document.getElementById("no-adventure-list").style.display = "block";
+  }
+</script>
 </body>
+
 </html>

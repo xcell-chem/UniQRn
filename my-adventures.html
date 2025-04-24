@@ -99,5 +99,13 @@
 <body>
   <h1>My Adventures</h1>
   <ul id="adventureList"></ul>
+
+<script>
+  const container = document.getElementById("my-adventures");
+  if (container && container.children.length === 0) {
+    document.getElementById("no-adventures-message").style.display = "block";
+  }
+</script>
 </body>
+
 </html>
