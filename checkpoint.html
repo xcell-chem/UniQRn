@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkpoint</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/env.js"></script>
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: sans-serif; padding: 2rem; text-align: center; }
+    .card {
+      background: #0f172a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+    h1, h2 { color: #f4c542; }
+  </style>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const qrId = params.get("id");
+
+    if (!qrId) {
+      document.body.innerHTML = "<p style='color:red;'>Missing QR code ID.</p>";
+      throw new Error("Missing QR code ID");
+    }
+
+    async function loadCheckpoint() {
+      const { data, error } = await supabase
+        .from("qr_adventure_data")
+        .select("clue, label, geotag")
+        .eq("qr_code_id", qrId)
+        .single();
+
+      if (error || !data) {
+        document.querySelector(".card").innerHTML = "<p>Unable to load checkpoint data.</p>";
+        console.error("Supabase error:", error);
+        return;
+      }
+
+      document.getElementById("checkpointLabel").innerText = data.label;
+      document.getElementById("checkpointClue").innerText = data.clue || "No clue available.";
+
+      if (data.geotag?.lat && data.geotag?.lng) {
+        document.getElementById("locationInfo").innerText = `Location: ${data.geotag.lat.toFixed(5)}, ${data.geotag.lng.toFixed(5)}`;
+      } else {
+        document.getElementById("locationInfo").innerText = "No map location set for this checkpoint.";
+      }
+    }
+
+    loadCheckpoint();
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>Checkpoint</h1>
+    <h2 id="checkpointLabel">Loading...</h2>
+    <p id="checkpointClue"></p>
+    <p id="locationInfo" style="margin-top: 1rem;"></p>
+  </div>
+</body>
+</html>

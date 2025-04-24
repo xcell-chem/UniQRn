@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading Adventure...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+    .loading { font-size: 1.5rem; }
+  </style>
+  <script src="/env.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const qrId = params.get("id");
+
+    if (!qrId) {
+      document.body.innerHTML = "<p style='color:red;'>Invalid QR code — no ID provided.</p>";
+      throw new Error("Missing QR ID");
+    }
+
+    async function checkQR() {
+      const { data, error } = await supabase
+        .from("qr_adventure_data")
+        .select("label")
+        .eq("qr_code_id", qrId)
+        .single();
+
+      if (error || !data) {
+        document.body.innerHTML = "<p style='color:red;'>QR code not found.</p>";
+        console.error("Supabase error:", error);
+        return;
+      }
+
+      const label = data.label;
+
+      if (label === "start") {
+        window.location.href = `/register.html?id=${qrId}`;
+      } else {
+        window.location.href = `/checkpoint.html?id=${qrId}`;
+      }
+    }
+
+    checkQR();
+  </script>
+</head>
+<body>
+  <div class="loading">Checking QR code... Please wait.</div>
+</body>
+</html>
