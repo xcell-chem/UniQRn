@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UniQRn Adventures</title>
   <link href="/style.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="/supabaseClient.js"></script>
   <style>
     body {
       background: #1a1a2e;
@@ -85,119 +88,61 @@
       <option value="treasureHunt">Treasure Hunt</option>
       <option value="qrGo">UniQRn Go</option>
       <option value="checkpointChase">Checkpoint Chase</option>
-      <option value="riddleTrail">Riddle Trail</option>
-      <option value="escapeRoute">Escape Route</option>
-      <option value="codeCracker">Code Cracker</option>
-      <option value="multipleChoiceMaze">Multiple Choice Maze</option>
-      <option value="historyTrail">History Trail</option>
-      <option value="scienceQuest">Science Quest</option>
-      <option value="languageLoop">Language Loop</option>
-      <option value="mathMarch">Math March</option>
-      <option value="birthdayQuest">Birthday Quest</option>
-      <option value="weddingTrail">Wedding Trail</option>
-      <option value="openDayExplorer">Open Day Explorer</option>
-      <option value="charityCrawl">Charity Crawl</option>
-      <option value="whodunnitWalk">Whodunnit Walk</option>
-      <option value="spyTrail">Spy Trail</option>
-      <option value="clueHunt">Clue Hunt (CSI Style)</option>
-      <option value="randomOrder">Random Order</option>
-      <option value="dynamicRoute">Dynamic Route</option>
-      <option value="loopingCourse">Looping Course</option>
     </select>
 
     <div id="typeDescription" class="type-description"></div>
-    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
-
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
 
   <script>
+    const supabase = window.supabaseClient;
     const descriptions = {
       orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
       easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
       treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
       qrGo: "Direction and distance only — find your way using compass navigation style.",
-      checkpointChase: "Visit as many checkpoints as possible in a set time, order doesn’t matter.",
-      riddleTrail: "Each point gives a riddle — solve it to unlock the next one.",
-      escapeRoute: "Only one route leads out — wrong turns send you back.",
-      codeCracker: "Collect code fragments from each stop to unlock the final reward.",
-      multipleChoiceMaze: "Pick paths based on answers. Wrong? You loop back!",
-      historyTrail: "Each checkpoint teaches a bit of history. Learn as you explore.",
-      scienceQuest: "STEM-based facts or challenges at every point.",
-      languageLoop: "Translate phrases or solve puzzles in a target language.",
-      mathMarch: "Every checkpoint has a math challenge to solve.",
-      birthdayQuest: "Customised trail for a birthday adventure.",
-      weddingTrail: "Guests follow clues or tasks themed around the couple.",
-      openDayExplorer: "Explore facilities or exhibits — great for school tours.",
-      charityCrawl: "Promotes awareness or donation checkpoints for good causes.",
-      whodunnitWalk: "Gather clues at each location to solve the mystery.",
-      spyTrail: "Decode secret missions and complete them stealthily.",
-      clueHunt: "Evidence-based trail — collect info and solve the case.",
-      randomOrder: "Checkpoints in any order — randomly assigned.",
-      dynamicRoute: "Every participant gets a different randomized route.",
-      loopingCourse: "Endless mode — loops back to start after last checkpoint."
+      checkpointChase: "Visit as many checkpoints as possible in a set time, order doesn’t matter."
     };
 
     function showOptions() {
       const type = document.getElementById('adventureType').value;
-      const container = document.getElementById('dynamicOptions');
       const description = document.getElementById('typeDescription');
-      container.innerHTML = '';
       description.innerText = descriptions[type] || '';
-
-      if (type === 'orienteering') {
-        container.innerHTML = `
-          <label>Number of Checkpoints:</label>
-          <input type="number" min="2" placeholder="e.g. 5">
-        `;
-      } else if (type === 'qrGo' || type === 'checkpointChase') {
-        container.innerHTML = `
-          <label>Number of Checkpoints:</label>
-          <input type="number" min="2" placeholder="e.g. 5">
-          <label>Visibility Radius (meters):</label>
-          <input type="number" min="10" placeholder="e.g. 50">
-        `;
-      } else if (type === 'easterEgg') {
-        container.innerHTML = `
-          <label>Number of Eggs to Hide:</label>
-          <input type="number" min="1" placeholder="e.g. 10">
-          <label>Enable Clues?</label>
-          <select>
-            <option>Yes</option>
-            <option>No</option>
-          </select>
-        `;
-      } else if (type === 'treasureHunt' || type === 'riddleTrail') {
-        container.innerHTML = `
-          <label>Number of Steps:</label>
-          <input type="number" min="1">
-          <label>Custom Clues or Riddles per Stop?</label>
-          <textarea placeholder="Optional..."></textarea>
-        `;
-      } else if (type === 'multipleChoiceMaze') {
-        container.innerHTML = `
-          <label>Choices per Checkpoint:</label>
-          <input type="number" min="2" max="5">
-          <label>Penalty for Wrong Path?</label>
-          <select><option>Yes</option><option>No</option></select>
-        `;
-      }
     }
 
-    function submitAdventure() {
+    async function submitAdventure() {
       const title = document.getElementById('adventureTitle').value.trim();
       const description = document.getElementById('adventureDescription').value.trim();
       const type = document.getElementById('adventureType').value;
+
       if (!title || !type) {
         alert("Please enter a title and select an adventure type.");
         return;
       }
-      console.log("[Adventure Setup] Title:", title);
-      console.log("[Adventure Setup] Type:", type);
-      console.log("[Adventure Setup] Description:", description);
-      alert("Adventure created! (this will later write to the database)");
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+
+      if (!userId) {
+        alert("You must be logged in to create an adventure.");
+        return;
+      }
+
+      const { data, error } = await supabase.from('adventures').insert({
+        title,
+        description,
+        adventure_type: type,
+        created_by: userId
+      }).select().single();
+
+      if (error) {
+        console.error("[Supabase] Error creating adventure:", error);
+        alert("Failed to create adventure. Please try again.");
+        return;
+      }
+
+      window.location.href = "/my-adventures.html";
     }
-    
   </script>
 </body>
 </html>
