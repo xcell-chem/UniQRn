@@ -60,86 +60,54 @@
       console.error(err);
     });
 
-    
-async function saveGeotag() {
-  const latLng = marker.getLatLng();
-  const radius = parseInt(document.getElementById("radius").value);
-  const updatePayload = {
-    geotag: { lat: latLng.lat, lng: latLng.lng },
-    visible_radius: radius
-  };
-
-  console.log("Updating geotag for qr_code_id:", qrId);
-  console.log("Payload:", updatePayload);
-
-  const { error } = await supabase
-    .from("qr_adventure_data")
-    .update(updatePayload)
-    .eq("qr_code_id", qrId);
-
-  if (error) {
-    alert("Failed to save geotag.");
-    console.error("Update error:", error);
-    return;
-  }
-
-  const { data: check, error: checkErr } = await supabase
-    .from("qr_adventure_data")
-    .select("*")
-    .eq("qr_code_id", qrId)
-    .single();
-
-  console.log("Record after update:", check);
-  if (checkErr) {
-    console.error("Failed to fetch updated record:", checkErr);
-  }
-
-  const { data: qrRecord, error: fetchError } = await supabase
-    .from("qr_adventure_data")
-    .select("adventure_id")
-    .eq("qr_code_id", qrId)
-    .single();
-
-  if (fetchError || !qrRecord) {
-    alert("Saved, but failed to redirect.");
-  } else {
-    window.location.href = `/adventure.html?id=${qrRecord.adventure_id}`;
-  }
-}
+    async function saveGeotag() {
+      if (!marker) {
+        alert("Please wait for the map to load before saving.");
+        return;
+      }
 
       const latLng = marker.getLatLng();
       const radius = parseInt(document.getElementById("radius").value);
+      const updatePayload = {
+        geotag: { lat: latLng.lat, lng: latLng.lng },
+        visible_radius: radius
+      };
+
+      console.log("Updating geotag for qr_code_id:", qrId);
+      console.log("Payload:", updatePayload);
 
       const { error } = await supabase
         .from("qr_adventure_data")
-        .update({
-          geotag: { lat: latLng.lat, lng: latLng.lng },
-          visible_radius: radius
-        })
+        .update(updatePayload)
         .eq("qr_code_id", qrId);
 
       if (error) {
         alert("Failed to save geotag.");
-        console.error(error);
-      } else {
-        alert("Geotag saved successfully!");
-        
-      if (error) {
-        alert("Failed to save geotag.");
-        console.error(error);
-      } else {
-        // Fetch the adventure_id from the QR record
-        const { data: qrRecord, error: fetchError } = await supabase
-          .from("qr_adventure_data")
-          .select("adventure_id")
-          .eq("qr_code_id", qrId)
-          .single();
+        console.error("Update error:", error);
+        return;
+      }
 
-        if (fetchError || !qrRecord) {
-          alert("Saved, but failed to redirect.");
-        } else {
-          window.location.href = `/adventure.html?id=${qrRecord.adventure_id}`;
-        }
+      const { data: check, error: checkErr } = await supabase
+        .from("qr_adventure_data")
+        .select("*")
+        .eq("qr_code_id", qrId)
+        .single();
+
+      console.log("Record after update:", check);
+      if (checkErr) {
+        console.error("Failed to fetch updated record:", checkErr);
+      }
+
+      const { data: qrRecord, error: fetchError } = await supabase
+        .from("qr_adventure_data")
+        .select("adventure_id")
+        .eq("qr_code_id", qrId)
+        .single();
+
+      if (fetchError || !qrRecord) {
+        alert("Saved, but failed to redirect.");
+      } else {
+        window.location.href = `/adventure.html?id=${qrRecord.adventure_id}`;
       }
     }
 
