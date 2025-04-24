@@ -1,1 +1,103 @@
-Restored My Adventures Page HTML
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Adventures | UniQRn</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/env.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+
+      if (!userId) {
+        document.body.innerHTML = '<p>Please log in to view your adventures.</p>';
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('adventures')
+        .select('*')
+        .eq('created_by', userId)
+        .order('created_at', { ascending: false });
+
+      const list = document.getElementById('adventureList');
+      if (error) {
+        console.error('[Supabase] Error loading adventures:', error);
+        list.innerHTML = '<p>Failed to load adventures.</p>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        list.innerHTML = "<p>You haven't created any adventures yet.</p>";
+        return;
+      }
+
+      list.innerHTML = data.map(a => `
+        <li>
+          <div class="title"><a href="/adventure.html?id=${a.id}">${a.title}</a></div>
+          <div class="type">Type: ${a.adventure_type}</div>
+          <div>${a.description || ''}</div>
+        </li>
+      `).join('');
+    });
+  </script>
+  <style>
+    body {
+      background: #1a1a2e;
+      color: gold;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    ul#adventureList {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    ul#adventureList li {
+      background: #0f172a;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .title {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .title a {
+      color: gold;
+      text-decoration: none;
+    }
+    .title a:hover {
+      text-decoration: underline;
+    }
+    .type {
+      font-style: italic;
+      color: #f0e68c;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Adventures</h1>
+  <ul id="adventureList"></ul>
+</body>
+</html>
