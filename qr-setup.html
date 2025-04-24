@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="/env.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #1a1a2e; color: gold; }
+    #map { height: 60vh; }
+    .container { padding: 1rem; }
+    label, input { display: block; margin: 1rem 0 0.25rem; }
+    input[type="number"] { width: 100px; padding: 0.25rem; font-size: 1rem; }
+    button {
+      margin-top: 1rem; padding: 0.75rem 1.5rem; border: none;
+      border-radius: 6px; font-size: 1rem; background-color: #00adb5; color: white; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="container">
+    <p><strong>Accuracy:</strong> <span id="accuracy">...</span></p>
+    <label for="radius">Visibility Radius (meters):</label>
+    <input id="radius" type="number" min="1" value="25" />
+    <button onclick="saveGeotag()">Save Location</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+    let marker, accuracy;
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrId = urlParams.get("id");
+
+    if (!qrId) {
+      alert("QR ID not found in URL.");
+      throw new Error("Missing QR ID");
+    }
+
+    const map = L.map('map').setView([0, 0], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      accuracy = pos.coords.accuracy;
+
+      map.setView([lat, lng], 18);
+      marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+      document.getElementById("accuracy").innerText = `±${Math.round(accuracy)}m`;
+    }, err => {
+      alert("Failed to access location.");
+      console.error(err);
+    });
+
+    async function saveGeotag() {
+      const latLng = marker.getLatLng();
+      const radius = parseInt(document.getElementById("radius").value);
+
+      const { error } = await supabase
+        .from("qr_adventure_data")
+        .update({
+          geotag: { lat: latLng.lat, lng: latLng.lng },
+          visible_radius: radius
+        })
+        .eq("qr_code_id", qrId);
+
+      if (error) {
+        alert("Failed to save geotag.");
+        console.error(error);
+      } else {
+        alert("Geotag saved successfully!");
+        window.location.href = "/adventure.html?id=return"; // Replace with actual redirect logic
+      }
+    }
+
+    window.saveGeotag = saveGeotag;
+  </script>
+</body>
+</html>
