@@ -1,36 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UniQRn Adventures</title>
   <link href="/style.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js">
-  function loginWithGoogle() {
-    window.supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
-  }
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-  window.SUPABASE_URL = "https://tjbcucdewwczndkeypey.supabase.co";
-  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmN1Y2Rld3djem5ka2V5cGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MzUwMzcsImV4cCI6MjA1MzUxMTAzN30.iBm2u7xY5qRQT6gOQw7OwAYTENJh49B9lI0YtLuKJAQ";
-  window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-
-  function loginWithGoogle() {
-    window.supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
-  }
-</script>
-
+    const SUPABASE_URL = "https://tjbcucdewwczndkeypey.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmN1Y2Rld3djem5ka2V5cGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MzUwMzcsImV4cCI6MjA1MzUxMTAzN30.iBm2u7xY5qRQT6gOQw7OwAYTENJh49B9lI0YtLuKJAQ";
+    const supabase = window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
   <style>
     body {
       background: #1a1a2e;
@@ -90,7 +71,6 @@
   </style>
 </head>
 <body>
-  <button onclick="loginWithGoogle()" style="position: absolute; top: 1rem; right: 1rem;">Login with Google</button>
   <h1>Design Your Adventure</h1>
   <p>
     Use this tool to create location-based experiences for orienteering, treasure hunts,
@@ -100,10 +80,8 @@
   <div class="form-container">
     <label for="adventureTitle">Adventure Title:</label>
     <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail for Year 6">
-
     <label for="adventureDescription">Description (optional):</label>
     <textarea id="adventureDescription" placeholder="e.g. A fun, educational trail across the school field."></textarea>
-
     <label for="adventureType">Adventure Type:</label>
     <select id="adventureType" onchange="showOptions()">
       <option value="">-- Select an Adventure Type --</option>
@@ -111,67 +89,22 @@
       <option value="easterEgg">Easter Egg Hunt</option>
       <option value="treasureHunt">Treasure Hunt</option>
       <option value="qrGo">UniQRn Go</option>
-      <option value="checkpointChase">Checkpoint Chase</option>
-      <option value="riddleTrail">Riddle Trail</option>
-      <option value="escapeRoute">Escape Route</option>
-      <option value="codeCracker">Code Cracker</option>
-      <option value="multipleChoiceMaze">Multiple Choice Maze</option>
-      <option value="historyTrail">History Trail</option>
-      <option value="scienceQuest">Science Quest</option>
-      <option value="languageLoop">Language Loop</option>
-      <option value="mathMarch">Math March</option>
-      <option value="birthdayQuest">Birthday Quest</option>
-      <option value="weddingTrail">Wedding Trail</option>
-      <option value="openDayExplorer">Open Day Explorer</option>
-      <option value="charityCrawl">Charity Crawl</option>
-      <option value="whodunnitWalk">Whodunnit Walk</option>
-      <option value="spyTrail">Spy Trail</option>
-      <option value="clueHunt">Clue Hunt (CSI Style)</option>
-      <option value="randomOrder">Random Order</option>
-      <option value="dynamicRoute">Dynamic Route</option>
-      <option value="loopingCourse">Looping Course</option>
     </select>
-
     <div id="typeDescription" class="type-description"></div>
-    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
-
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
 
   <script>
-    const supabase = window.supabaseClient;
-
     const descriptions = {
       orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
       easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
       treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
-      qrGo: "Direction and distance only — find your way using compass navigation style.",
-      checkpointChase: "Visit as many checkpoints as possible in a set time, order doesn’t matter.",
-      riddleTrail: "Each point gives a riddle — solve it to unlock the next one.",
-      escapeRoute: "Only one route leads out — wrong turns send you back.",
-      codeCracker: "Collect code fragments from each stop to unlock the final reward.",
-      multipleChoiceMaze: "Pick paths based on answers. Wrong? You loop back!",
-      historyTrail: "Each checkpoint teaches a bit of history. Learn as you explore.",
-      scienceQuest: "STEM-based facts or challenges at every point.",
-      languageLoop: "Translate phrases or solve puzzles in a target language.",
-      mathMarch: "Every checkpoint has a math challenge to solve.",
-      birthdayQuest: "Customised trail for a birthday adventure.",
-      weddingTrail: "Guests follow clues or tasks themed around the couple.",
-      openDayExplorer: "Explore facilities or exhibits — great for school tours.",
-      charityCrawl: "Promotes awareness or donation checkpoints for good causes.",
-      whodunnitWalk: "Gather clues at each location to solve the mystery.",
-      spyTrail: "Decode secret missions and complete them stealthily.",
-      clueHunt: "Evidence-based trail — collect info and solve the case.",
-      randomOrder: "Checkpoints in any order — randomly assigned.",
-      dynamicRoute: "Every participant gets a different randomized route.",
-      loopingCourse: "Endless mode — loops back to start after last checkpoint."
+      qrGo: "Direction and distance only — find your way using compass navigation style."
     };
 
     function showOptions() {
       const type = document.getElementById('adventureType').value;
-      const container = document.getElementById('dynamicOptions');
       const description = document.getElementById('typeDescription');
-      container.innerHTML = '';
       description.innerText = descriptions[type] || '';
     }
 
@@ -185,14 +118,27 @@
         return;
       }
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log('[Debug] Session data:', sessionData);
-      const userId = sessionData?.session?.user?.id;
-
-      if (!userId) {
-        alert("You must be logged in to create an adventure.");
+      let { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        const popup = window.open('/login.html', 'LoginPopup', 'width=500,height=600');
+        const checkLogin = setInterval(async () => {
+          const session = await supabase.auth.getSession();
+          if (session?.session?.user?.id) {
+            clearInterval(checkLogin);
+            popup?.close();
+            proceedAdventureCreation(session.session.user.id);
+          }
+        }, 1000);
         return;
       }
+
+      proceedAdventureCreation(sessionData.session.user.id);
+    }
+
+    async function proceedAdventureCreation(userId) {
+      const title = document.getElementById('adventureTitle').value.trim();
+      const description = document.getElementById('adventureDescription').value.trim();
+      const type = document.getElementById('adventureType').value;
 
       const { error } = await supabase.from('adventures').insert({
         title,
@@ -202,23 +148,11 @@
       });
 
       if (error) {
-        console.error("[Supabase] Error creating adventure:", error);
-        alert("Failed to create adventure. Please try again.");
-        return;
+        alert("Failed to create adventure.");
+      } else {
+        window.location.href = "/my-adventures.html";
       }
-
-      window.location.href = "/my-adventures.html";
     }
-  
-  function loginWithGoogle() {
-    window.supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
-  }
-</script>
-
+  </script>
 </body>
 </html>
