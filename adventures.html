@@ -1,30 +1,82 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UniQRn Adventures</title>
   <link href="/style.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script type="module" src="/supabaseClient.js"></script>
   <style>
-    body { background: #1a1a2e; color: gold; font-family: 'Segoe UI', sans-serif; padding: 2rem; text-align: center; }
-    .form-container { max-width: 600px; margin: 2rem auto; background: #0f172a; padding: 2rem; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.4); text-align: left; }
-    label, select { display: block; margin-top: 1rem; font-size: 1rem; }
-    select, input, textarea { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; border: none; font-size: 1rem; }
-    button { margin-top: 1.5rem; background-color: #00adb5; color: white; font-weight: bold; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
-    .type-description { margin-top: 1rem; font-style: italic; color: #f0e68c; }
+    body {
+      background: #1a1a2e;
+      color: gold;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      font-size: 1.2rem;
+      line-height: 1.7;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #0f172a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      text-align: left;
+    }
+    label, select {
+      display: block;
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      background-color: #00adb5;
+      color: white;
+      font-weight: bold;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .type-description {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #f0e68c;
+    }
   </style>
 </head>
 <body>
   <h1>Design Your Adventure</h1>
-  <p>Create your own location-based adventure. Pick a type, give it a name, and start building!</p>
+  <p>
+    Use this tool to create location-based experiences for orienteering, treasure hunts,
+    learning trails and more. Perfect for schools, charities, and events.
+  </p>
+
   <div class="form-container">
     <label for="adventureTitle">Adventure Title:</label>
-    <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail">
+    <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail for Year 6">
+
     <label for="adventureDescription">Description (optional):</label>
-    <textarea id="adventureDescription" placeholder="A fun educational trail..."></textarea>
+    <textarea id="adventureDescription" placeholder="e.g. A fun, educational trail across the school field."></textarea>
+
     <label for="adventureType">Adventure Type:</label>
     <select id="adventureType" onchange="showOptions()">
       <option value="">-- Select an Adventure Type --</option>
@@ -33,42 +85,119 @@
       <option value="treasureHunt">Treasure Hunt</option>
       <option value="qrGo">UniQRn Go</option>
       <option value="checkpointChase">Checkpoint Chase</option>
+      <option value="riddleTrail">Riddle Trail</option>
+      <option value="escapeRoute">Escape Route</option>
+      <option value="codeCracker">Code Cracker</option>
+      <option value="multipleChoiceMaze">Multiple Choice Maze</option>
+      <option value="historyTrail">History Trail</option>
+      <option value="scienceQuest">Science Quest</option>
+      <option value="languageLoop">Language Loop</option>
+      <option value="mathMarch">Math March</option>
+      <option value="birthdayQuest">Birthday Quest</option>
+      <option value="weddingTrail">Wedding Trail</option>
+      <option value="openDayExplorer">Open Day Explorer</option>
+      <option value="charityCrawl">Charity Crawl</option>
+      <option value="whodunnitWalk">Whodunnit Walk</option>
+      <option value="spyTrail">Spy Trail</option>
+      <option value="clueHunt">Clue Hunt (CSI Style)</option>
+      <option value="randomOrder">Random Order</option>
+      <option value="dynamicRoute">Dynamic Route</option>
+      <option value="loopingCourse">Looping Course</option>
     </select>
+
     <div id="typeDescription" class="type-description"></div>
+    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
+
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
 
   <script>
-    const supabase = window.supabaseClient;
     const descriptions = {
-      orienteering: "Visit checkpoints in a specific order using a map.",
-      easterEgg: "Find QR codes scattered across the area in any order.",
-      treasureHunt: "Solve clues to unlock the next location.",
-      qrGo: "Follow a direction and distance to locate the next checkpoint.",
-      checkpointChase: "Reach as many checkpoints as possible in a time limit."
+      orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
+      easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
+      treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
+      qrGo: "Direction and distance only — find your way using compass navigation style.",
+      checkpointChase: "Visit as many checkpoints as possible in a set time, order doesn’t matter.",
+      riddleTrail: "Each point gives a riddle — solve it to unlock the next one.",
+      escapeRoute: "Only one route leads out — wrong turns send you back.",
+      codeCracker: "Collect code fragments from each stop to unlock the final reward.",
+      multipleChoiceMaze: "Pick paths based on answers. Wrong? You loop back!",
+      historyTrail: "Each checkpoint teaches a bit of history. Learn as you explore.",
+      scienceQuest: "STEM-based facts or challenges at every point.",
+      languageLoop: "Translate phrases or solve puzzles in a target language.",
+      mathMarch: "Every checkpoint has a math challenge to solve.",
+      birthdayQuest: "Customised trail for a birthday adventure.",
+      weddingTrail: "Guests follow clues or tasks themed around the couple.",
+      openDayExplorer: "Explore facilities or exhibits — great for school tours.",
+      charityCrawl: "Promotes awareness or donation checkpoints for good causes.",
+      whodunnitWalk: "Gather clues at each location to solve the mystery.",
+      spyTrail: "Decode secret missions and complete them stealthily.",
+      clueHunt: "Evidence-based trail — collect info and solve the case.",
+      randomOrder: "Checkpoints in any order — randomly assigned.",
+      dynamicRoute: "Every participant gets a different randomized route.",
+      loopingCourse: "Endless mode — loops back to start after last checkpoint."
     };
 
     function showOptions() {
       const type = document.getElementById('adventureType').value;
-      document.getElementById('typeDescription').innerText = descriptions[type] || '';
+      const container = document.getElementById('dynamicOptions');
+      const description = document.getElementById('typeDescription');
+      container.innerHTML = '';
+      description.innerText = descriptions[type] || '';
+
+      if (type === 'orienteering') {
+        container.innerHTML = `
+          <label>Number of Checkpoints:</label>
+          <input type="number" min="2" placeholder="e.g. 5">
+        `;
+      } else if (type === 'qrGo' || type === 'checkpointChase') {
+        container.innerHTML = `
+          <label>Number of Checkpoints:</label>
+          <input type="number" min="2" placeholder="e.g. 5">
+          <label>Visibility Radius (meters):</label>
+          <input type="number" min="10" placeholder="e.g. 50">
+        `;
+      } else if (type === 'easterEgg') {
+        container.innerHTML = `
+          <label>Number of Eggs to Hide:</label>
+          <input type="number" min="1" placeholder="e.g. 10">
+          <label>Enable Clues?</label>
+          <select>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        `;
+      } else if (type === 'treasureHunt' || type === 'riddleTrail') {
+        container.innerHTML = `
+          <label>Number of Steps:</label>
+          <input type="number" min="1">
+          <label>Custom Clues or Riddles per Stop?</label>
+          <textarea placeholder="Optional..."></textarea>
+        `;
+      } else if (type === 'multipleChoiceMaze') {
+        container.innerHTML = `
+          <label>Choices per Checkpoint:</label>
+          <input type="number" min="2" max="5">
+          <label>Penalty for Wrong Path?</label>
+          <select><option>Yes</option><option>No</option></select>
+        `;
+      }
     }
 
-    async function submitAdventure() {
+    function submitAdventure() {
       const title = document.getElementById('adventureTitle').value.trim();
       const description = document.getElementById('adventureDescription').value.trim();
       const type = document.getElementById('adventureType').value;
-
-      if (!title || !type) return alert("Please enter title and type.");
-
-      const { data: session } = await supabase.auth.getSession();
-      const userId = session?.session?.user?.id;
-      if (!userId) return alert("Login required.");
-
-      const { error } = await supabase.from('adventures').insert({ title, description, adventure_type: type, created_by: userId });
-      if (error) return alert("Failed to create adventure.");
-
-      window.location.href = "/my-adventures.html";
+      if (!title || !type) {
+        alert("Please enter a title and select an adventure type.");
+        return;
+      }
+      console.log("[Adventure Setup] Title:", title);
+      console.log("[Adventure Setup] Type:", type);
+      console.log("[Adventure Setup] Description:", description);
+      alert("Adventure created! (this will later write to the database)");
     }
+    
   </script>
 </body>
 </html>
