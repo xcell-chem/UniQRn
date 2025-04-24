@@ -197,6 +197,11 @@
       console.log("[Adventure Setup] Description:", description);
       alert("Adventure created! (this will later write to the database)");
     }
+    window.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById('adventureType').value) {
+    showOptions();
+  }
+});
   </script>
 </body>
 </html>
