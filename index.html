@@ -5,8 +5,8 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>UniQRn – Earn by Sharing QR Codes</title>
-  <link href="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//logo.png" rel="icon" type="image/png"/>
   <link href="style.css" rel="stylesheet"/>
+  <link href="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//logo.png" rel="icon" type="image/png"/>
   <style>
     body {
       text-align: center;
@@ -22,19 +22,6 @@
       margin-top: 1rem;
     }
 
-    #balances {
-      font-weight: bold;
-      margin-top: 2rem;
-      color: gold;
-    }
-
-    p {
-      max-width: 700px;
-      margin: 1.5rem auto;
-      font-size: 1.1rem;
-      line-height: 1.6;
-    }
-
     .buttons {
       margin-top: 2rem;
       display: flex;
@@ -43,18 +30,28 @@
       flex-wrap: wrap;
     }
 
-    .buttons a {
+    .buttons button, .buttons a {
       background-color: #00adb5;
       color: white;
       padding: 1rem 2rem;
       border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
+      border: none;
+      font-size: 1rem;
       transition: background-color 0.3s;
+      cursor: pointer;
     }
 
-    .buttons a:hover {
+    .buttons button:hover, .buttons a:hover {
       background-color: #007b80;
+    }
+
+    p {
+      max-width: 700px;
+      margin: 1.5rem auto;
+      font-size: 1.1rem;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -62,28 +59,32 @@
   <div id="header"></div>
   <h1 class="homepage-text">Welcome to UniQRn</h1>
   <img alt="UniQRn Logo" class="logo" src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//logo.png">
-  
-    <p>
-      <strong>UniQRn</strong>- Reach new customers, or simply get paid to share stickers and links! 
-      <br><br>
-        Earn coins and cash commisions, every time your code is scanned,<br>
-        someone signs-up, or interacts with our affiliates.  
-        <br>
-        -Coming soon
-        <br><br>
-        UniQRn is a print software and web based track and manage solution for individually identifiable QR codes .<br>
-        Perfect for creators, marketers, and businesses — UniQRn helps engage your community like never before,
-        <br> and most importantly, reduces your costs by letting you know what works and what doesn't! 
-      </p>
-  
+  <p>
+    UniQRn is a community-powered QR code platform that pays you to share stickers and links.  
+    Earn coins and commission every time your code is scanned or someone signs up.  
+    Perfect for creators, marketers, and businesses — UniQRn helps you understand what’s working and engage your community like never before.
+  </p>
   <div class="buttons">
-    <a href="/register.html">Register</a>
+    <button onclick="loginWithGoogle()">Register with Google</button>
     <a href="/dashboard.html">View My Codes</a>
     <a href="/create.html">Create Codes</a>
   </div>
+
   <script src="/env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="/supabaseClient.js"></script>
   <script src="/header.js"></script>
+
+  <script>
+    function loginWithGoogle() {
+      const supabase = window.supabaseClient;
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://uniqrn.co.uk/login_callback.html'
+        }
+      });
+    }
+  </script>
 </body>
 </html>

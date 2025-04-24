@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,59 +13,53 @@
 </head>
 <body>
   <div id="header"></div>
-  <h1>Create Codes</h1>
-  
-  <!-- Feedback element -->
-  <div id="feedback" class="feedback" style="display:none;"></div>
-  
-  <!-- Code creation form -->
-  <div id="createForm">
-    <label>
-      Label/Folder:
-      <input id="label" type="text" placeholder="e.g. ads/mirrors"/>
-    </label>
-    <br/>
-    <label>
-      Redirect URL:
-      <input id="redirect_url" type="url" placeholder="https://example.com"/>
-    </label>
-    <br/>
-    <label>
-      Location:
-      <input id="location" type="text" placeholder="Where is the code placed?"/>
-    </label>
-    <br/>
-    <label>
-      Optional Note:
-      <input id="custom_1" type="text" placeholder="Campaign name or note"/>
-    </label>
-    <br/>
-    <label>
-      Quantity:
-      <input id="quantity" type="number" placeholder="Enter quantity" min="1" value="1"/>
-    </label>
-    <br/>
-    <label>
-      <input type="checkbox" id="active" checked/> Mark QR as active
-    </label>
-    <br/>
-    <label>
-      <input type="checkbox" id="single_use"/> Make single-use only
-    </label>
-    <br/>
-    <label>
-      <input type="checkbox" id="pre_register"/> Pre-register code (for affiliates)
-    </label>
-    <br/>
-    <button id="createCodeBtn">Create Code(s)</button>
+  <div class="container center-form">
+    <h1>Create Codes</h1>
+
+    <div id="feedback" class="feedback" style="display:none;"></div>
+
+    <div id="createForm">
+      <label>
+        Label/Folder:
+        <input id="label" type="text" placeholder="e.g. ads/mirrors"/>
+      </label>
+      <label>
+        Redirect URL:
+        <input id="redirect_url" type="url" placeholder="https://example.com"/>
+      </label>
+      <label>
+        Location:
+        <input id="location" type="text" placeholder="Where is the code placed?"/>
+      </label>
+      <label>
+        Optional Note:
+        <input id="custom_1" type="text" placeholder="Campaign name or note"/>
+      </label>
+      <label>
+        Quantity:
+        <input id="quantity" type="number" placeholder="Enter quantity" min="1" value="1"/>
+      </label>
+
+      <div class="checkbox-group">
+        <label for="active">Mark QR as active</label>
+        <input type="checkbox" id="active" checked />
+      </div>
+      <div class="checkbox-group">
+        <label for="single_use">Make single-use only</label>
+        <input type="checkbox" id="single_use" />
+      </div>
+      <div class="checkbox-group">
+        <label for="pre_register">Pre-register code (for affiliates)</label>
+        <input type="checkbox" id="pre_register" />
+      </div>
+
+      <button id="createCodeBtn">Create Code(s)</button>
+    </div>
   </div>
-  
-  <!-- Container for displaying generated codes -->
-  <div id="generatedCodesContainer"></div>
-  
-  <script type="module" src="/create.js"></script>
-  <script src="/header.js"></script>
 
   <div id="generatedCodesContainer" class="qr-preview-list"></div>
+
+  <script type="module" src="/create.js"></script>
+  <script src="/header.js"></script>
 </body>
 </html>
