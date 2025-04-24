@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniQRn Adventures</title>
+  <link href="/style.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #1a1a2e;
+      color: gold;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      font-size: 1.2rem;
+      line-height: 1.7;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #0f172a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      text-align: left;
+    }
+    label, select {
+      display: block;
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Design Your Adventure</h1>
+  <p>
+    Use this tool to create location-based experiences for orienteering, treasure hunts,
+    learning trails and more. Perfect for schools, charities, and events.
+  </p>
+
+  <div class="form-container">
+    <label for="adventureType">Adventure Type:</label>
+    <select id="adventureType" onchange="showOptions()">
+      <option value="">-- Select an Adventure Type --</option>
+      <option value="orienteering">Orienteering</option>
+      <option value="easterEgg">Easter Egg Hunt</option>
+      <option value="treasureHunt">Treasure Hunt</option>
+      <option value="qrGo">UniQRn Go</option>
+      <option value="checkpointChase">Checkpoint Chase</option>
+      <option value="riddleTrail">Riddle Trail</option>
+      <option value="escapeRoute">Escape Route</option>
+      <option value="codeCracker">Code Cracker</option>
+      <option value="multipleChoiceMaze">Multiple Choice Maze</option>
+      <option value="historyTrail">History Trail</option>
+      <option value="scienceQuest">Science Quest</option>
+      <option value="languageLoop">Language Loop</option>
+      <option value="mathMarch">Math March</option>
+      <option value="birthdayQuest">Birthday Quest</option>
+      <option value="weddingTrail">Wedding Trail</option>
+      <option value="openDayExplorer">Open Day Explorer</option>
+      <option value="charityCrawl">Charity Crawl</option>
+      <option value="whodunnitWalk">Whodunnit Walk</option>
+      <option value="spyTrail">Spy Trail</option>
+      <option value="clueHunt">Clue Hunt (CSI Style)</option>
+      <option value="randomOrder">Random Order</option>
+      <option value="dynamicRoute">Dynamic Route</option>
+      <option value="loopingCourse">Looping Course</option>
+    </select>
+
+    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
+  </div>
+
+  <script>
+    function showOptions() {
+      const type = document.getElementById('adventureType').value;
+      const container = document.getElementById('dynamicOptions');
+      container.innerHTML = '';
+
+      if (type === 'orienteering' || type === 'qrGo' || type === 'checkpointChase') {
+        container.innerHTML = `
+          <label>Number of Checkpoints:</label>
+          <input type="number" min="2" placeholder="e.g. 5">
+          <label>Visibility Radius (meters):</label>
+          <input type="number" min="10" placeholder="e.g. 50">
+        `;
+      } else if (type === 'easterEgg') {
+        container.innerHTML = `
+          <label>Number of Eggs to Hide:</label>
+          <input type="number" min="1" placeholder="e.g. 10">
+          <label>Enable Clues?</label>
+          <select>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        `;
+      } else if (type === 'treasureHunt' || type === 'riddleTrail') {
+        container.innerHTML = `
+          <label>Number of Steps:</label>
+          <input type="number" min="1">
+          <label>Custom Clues or Riddles per Stop?</label>
+          <textarea placeholder="Optional..."></textarea>
+        `;
+      } else if (type === 'multipleChoiceMaze') {
+        container.innerHTML = `
+          <label>Choices per Checkpoint:</label>
+          <input type="number" min="2" max="5">
+          <label>Penalty for Wrong Path?</label>
+          <select><option>Yes</option><option>No</option></select>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
