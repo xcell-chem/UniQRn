@@ -30,38 +30,43 @@
       <option value="">-- Select an Adventure Type --</option>
       <option value="orienteering">Orienteering</option>
       <option value="easterEgg">Easter Egg Hunt</option>
+      <option value="treasureHunt">Treasure Hunt</option>
       <option value="qrGo">UniQRn Go</option>
+      <option value="checkpointChase">Checkpoint Chase</option>
     </select>
     <div id="typeDescription" class="type-description"></div>
-    <div id="dynamicOptions" style="margin-top: 2rem;"></div>
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
 
   <script>
     const supabase = window.supabaseClient;
     const descriptions = {
-      orienteering: "Visit checkpoints in order using map navigation.",
-      easterEgg: "Hunt scattered QR codes in any order.",
-      qrGo: "Follow only distance and direction to reach the next point."
+      orienteering: "Visit checkpoints in a specific order using a map.",
+      easterEgg: "Find QR codes scattered across the area in any order.",
+      treasureHunt: "Solve clues to unlock the next location.",
+      qrGo: "Follow a direction and distance to locate the next checkpoint.",
+      checkpointChase: "Reach as many checkpoints as possible in a time limit."
     };
 
     function showOptions() {
       const type = document.getElementById('adventureType').value;
       document.getElementById('typeDescription').innerText = descriptions[type] || '';
-      const container = document.getElementById('dynamicOptions');
-      container.innerHTML = '';
     }
 
     async function submitAdventure() {
       const title = document.getElementById('adventureTitle').value.trim();
       const description = document.getElementById('adventureDescription').value.trim();
       const type = document.getElementById('adventureType').value;
+
       if (!title || !type) return alert("Please enter title and type.");
+
       const { data: session } = await supabase.auth.getSession();
       const userId = session?.session?.user?.id;
       if (!userId) return alert("Login required.");
+
       const { error } = await supabase.from('adventures').insert({ title, description, adventure_type: type, created_by: userId });
       if (error) return alert("Failed to create adventure.");
+
       window.location.href = "/my-adventures.html";
     }
   </script>
