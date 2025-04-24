@@ -165,6 +165,7 @@
       }
 
       const { data: sessionData } = await supabase.auth.getSession();
+      console.log('[Debug] Session data:', sessionData);
       const userId = sessionData?.session?.user?.id;
 
       if (!userId) {
