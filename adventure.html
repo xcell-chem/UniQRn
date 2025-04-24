@@ -1,1 +1,152 @@
-Restored Adventure Detail Page HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UniQRn Adventures</title>
+  <link href="/style.css" rel="stylesheet" />
+  <script src="/env.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const descriptions = {
+      orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
+      easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
+      treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
+      qrGo: "Direction and distance only — find your way using compass navigation style."
+    };
+
+    window.showOptions = function() {
+      const type = document.getElementById('adventureType').value;
+      const description = document.getElementById('typeDescription');
+      description.innerText = descriptions[type] || '';
+    };
+
+    window.submitAdventure = async function () {
+      const title = document.getElementById('adventureTitle').value.trim();
+      const description = document.getElementById('adventureDescription').value.trim();
+      const type = document.getElementById('adventureType').value;
+      const quantity = parseInt(document.getElementById('numCheckpoints').value);
+
+      if (!title || !type || isNaN(quantity) || quantity < 1) {
+        alert("Please enter all required fields correctly.");
+        return;
+      }
+
+      let { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        const popup = window.open('/login.html', 'LoginPopup', 'width=500,height=600');
+        const checkLogin = setInterval(async () => {
+          const session = await supabase.auth.getSession();
+          if (session?.session?.user?.id) {
+            clearInterval(checkLogin);
+            popup?.close();
+            proceedAdventureCreation(session.session.user.id, title, description, type, quantity);
+          }
+        }, 1000);
+        return;
+      }
+
+      proceedAdventureCreation(sessionData.session.user.id, title, description, type, quantity);
+    }
+
+    async function proceedAdventureCreation(userId, title, description, type, quantity) {
+      const { data: adventure, error: advError } = await supabase.from('adventures').insert({
+        title,
+        description,
+        adventure_type: type,
+        created_by: userId
+      }).select().single();
+
+      if (advError || !adventure) {
+        alert("Failed to create adventure.");
+        return;
+      }
+
+      // Create start, n checkpoints, and finish QR entries
+      const totalQrs = quantity + 2;
+      const qrEntries = Array.from({ length: totalQrs }).map((_, i) => ({
+        id: crypto.randomUUID(),
+        owner_id: userId,
+        label: `Adventure ${title} - ${i === 0 ? 'Start' : i === totalQrs - 1 ? 'Finish' : `Checkpoint ${i}`}`,
+        type: 'adventure'
+      }));
+
+      const { error: qrInsertError } = await supabase.from('qr_codes').insert(qrEntries);
+      if (qrInsertError) {
+        alert("Failed to create QR codes.");
+        return;
+      }
+
+      const qrAdventureData = qrEntries.map((qr, index) => ({
+        qr_code_id: qr.id,
+        adventure_id: adventure.id,
+        adventure_type: type,
+        step_number: index
+      }));
+
+      const { error: advDataError } = await supabase.from('qr_adventure_data').insert(qrAdventureData);
+      if (advDataError) {
+        alert("QR metadata insertion failed.");
+        return;
+      }
+
+      window.location.href = "/my-adventures.html";
+    }
+  </script>
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: 'Segoe UI', sans-serif; padding: 2rem; text-align: center; }
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    p { max-width: 700px; margin: 0 auto 2rem; font-size: 1.2rem; line-height: 1.7; }
+    .form-container {
+      max-width: 600px; margin: 2rem auto; background: #0f172a;
+      padding: 2rem; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.4); text-align: left;
+    }
+    label, select { display: block; margin-top: 1rem; font-size: 1rem; }
+    select, input, textarea {
+      width: 100%; padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; border: none; font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem; background-color: #00adb5; color: white; font-weight: bold; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;
+    }
+    .type-description { margin-top: 1rem; font-style: italic; color: #f0e68c; }
+  </style>
+</head>
+<body>
+  <h1>Design Your Adventure</h1>
+  <p>
+    Use this tool to create location-based experiences for orienteering, treasure hunts,
+    learning trails and more. Perfect for schools, charities, and events.
+  </p>
+  <div class="form-container">
+    <label for="adventureTitle">Adventure Title:</label>
+    <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail for Year 6">
+
+    <label for="adventureDescription">Description (optional):</label>
+    <textarea id="adventureDescription" placeholder="e.g. A fun, educational trail across the school field."></textarea>
+
+    <label for="adventureType">Adventure Type:</label>
+    <select id="adventureType" onchange="showOptions()">
+      <option value="">-- Select an Adventure Type --</option>
+      <option value="orienteering">Orienteering</option>
+      <option value="easterEgg">Easter Egg Hunt</option>
+      <option value="treasureHunt">Treasure Hunt</option>
+      <option value="qrGo">UniQRn Go</option>
+    </select>
+
+    <label for="numCheckpoints">Number of Checkpoints (excluding start & finish):</label>
+    <input id="numCheckpoints" type="number" min="1" placeholder="e.g. 5">
+    <p><em>Start and Finish QR codes will be created automatically.</em></p>
+
+    <div id="typeDescription" class="type-description"></div>
+    <button onclick="submitAdventure()">Create Adventure</button>
+  </div>
+</body>
+</html>
