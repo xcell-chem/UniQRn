@@ -57,7 +57,7 @@
           <div><strong>Clue:</strong> ${qr.clue || '—'}</div>
           <div><strong>Radius:</strong> ${qr.visible_radius || 'N/A'}m</div>
           <div><strong>Geo:</strong> ${qr.geotag ? JSON.stringify(qr.geotag) : 'Not set'}</div>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://uniqrn.co.uk/qr-setup.html?id=${qr.qr_code_id}" alt="QR Preview">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://uniqrn.co.uk/adventure-scan.html?id=${qr.qr_code_id}" alt="QR Preview">
         </div>
       `).join('');
     }
