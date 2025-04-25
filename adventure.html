@@ -53,7 +53,7 @@
 
       qrList.innerHTML = qrs.map(qr => {
         const mapImg = qr.geotag?.lat && qr.geotag?.lng
-          ? `<img src="https://staticmap.openstreetmap.de/staticmap.php?center=${qr.geotag.lat},${qr.geotag.lng}&zoom=17&size=200x200&markers=${qr.geotag.lat},${qr.geotag.lng},lightblue1" alt="Map preview" style="border-radius: 8px;">`
+          ? `<img src="https://maps.geoapify.com/v1/staticmap?style=osm-carto&width=200&height=200&center=lonlat:${qr.geotag.lng},${qr.geotag.lat}&zoom=17&marker=lonlat:${qr.geotag.lng},${qr.geotag.lat};type:material;color:%2300adb5;size:medium&apiKey=3c3c614c0cf5474d881003229775becf" alt="Map preview" style="border-radius: 8px;">`
           : `<p style="color: #888;">No location</p>`;
 
         return `
