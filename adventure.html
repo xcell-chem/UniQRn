@@ -51,15 +51,24 @@
         return;
       }
 
-      qrList.innerHTML = qrs.map(qr => `
-        <div class="qr-entry">
-          <div><strong>Step:</strong> ${qr.step_number ?? 'N/A'}</div>
-          <div><strong>Clue:</strong> ${qr.clue || '—'}</div>
-          <div><strong>Radius:</strong> ${qr.visible_radius || 'N/A'}m</div>
-          <div><strong>Geo:</strong> ${qr.geotag ? JSON.stringify(qr.geotag) : 'Not set'}</div>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://uniqrn.co.uk/qr-setup.html?id=${qr.qr_code_id}" alt="QR Preview">
-        </div>
-      `).join('');
+      qrList.innerHTML = qrs.map(qr => {
+        const mapImg = qr.geotag?.lat && qr.geotag?.lng
+          ? `<img src="https://staticmap.openstreetmap.de/staticmap.php?center=${qr.geotag.lat},${qr.geotag.lng}&zoom=17&size=200x200&markers=${qr.geotag.lat},${qr.geotag.lng},lightblue1" alt="Map preview" style="border-radius: 8px;">`
+          : `<p style="color: #888;">No location</p>`;
+
+        return `
+          <div class="qr-entry">
+            <div><strong>Step:</strong> ${qr.step_number ?? 'N/A'}</div>
+            <div><strong>Clue:</strong> ${qr.clue || '—'}</div>
+            <div><strong>Radius:</strong> ${qr.visible_radius || 'N/A'}m</div>
+            <div><strong>Geo:</strong> ${qr.geotag ? JSON.stringify(qr.geotag) : 'Not set'}</div>
+            <div style="display: flex; flex-direction: row; gap: 1rem; align-items: center;">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qr.qr_code_id)}" alt="QR Preview">
+              ${mapImg}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     window.addEventListener('DOMContentLoaded', loadAdventure);
