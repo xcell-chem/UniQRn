@@ -2,21 +2,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Checkpoint</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
   <script src="/env.js"></script>
   <style>
     body { background: #1a1a2e; color: gold; font-family: sans-serif; padding: 1rem; }
-    h1 { text-align: center; }
     #map { height: 300px; border-radius: 8px; margin: 1rem 0; }
     .info-box {
       background: #0f172a;
       padding: 1rem;
-      margin-top: 1rem;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
@@ -24,77 +21,59 @@
 </head>
 <body>
   <h1>Checkpoint</h1>
-  <div id="content">
-    <div id="qrContent"></div>
-    <div id="map"></div>
-    <div id="scanStats" class="info-box"></div>
-  </div>
+  <div id="qrContent"></div>
+  <div id="map"></div>
+  <div id="scanStats" class="info-box"></div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrId = urlParams.get("id");
-    const registrationId = sessionStorage.getItem("registrationId");
+    async function initCheckpoint() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrId = urlParams.get("id");
+      const registrationId = sessionStorage.getItem("registrationId");
 
-    
-if (!registrationId || !qrId) {
-  console.warn("🚨 registrationId or qrId is missing");
-  console.log("📦 registrationId:", registrationId);
-  console.log("📦 qrId:", qrId);
+      console.log("📦 registrationId:", registrationId);
+      console.log("📦 qrId:", qrId);
 
-      console.warn("Missing registration or qr ID");
-      document.getElementById("qrContent").innerHTML = `
-        <div class="info-box" style="background: #332;">
-          <h3>⛔ You need to register first</h3>
-          <p>Please scan the start QR code to register before continuing this adventure.</p>
-        </div>`;
-      
-  document.getElementById("qrContent").innerHTML = `
-    <div class="info-box" style="background:#332; padding:1rem; border-radius:8px;">
-      <h3>⛔ Missing registration or QR code ID</h3>
-      <p>Please start the adventure by scanning the start QR code to register first.</p>
-    </div>`;
-  return;
+      if (!registrationId || !qrId) {
+        document.getElementById("qrContent").innerHTML = `
+          <div class="info-box" style="background:#332; padding:1rem;">
+            <h3>⛔ Missing registration or QR code ID</h3>
+            <p>Please scan the start QR to register first.</p>
+          </div>`;
+        return;
+      }
 
-    }
-
-    async function tryLogScan() {
-      console.log("📌 Logging check-in:", { registrationId, qr_code_id: qrId });
-
+      // Log the check-in
       await supabase.from("checkins").insert({
         user_id: registrationId,
         location: qrId,
         notes: "checkpoint scan"
       });
 
-      const { data: checkins, error } = await supabase
+      // Get scan count
+      const { data: checkins } = await supabase
         .from("checkins")
         .select("*")
         .eq("location", qrId);
 
-      console.log(`✅ Check-in count: ${checkins?.length ?? 0} | Records:`, checkins);
-
       document.getElementById("scanStats").innerHTML = `
         <h3>🎉 Well done!</h3>
         <p>This checkpoint has been scanned <strong>${checkins?.length ?? 0}</strong> times.</p>`;
-    }
 
-    async function loadMapLocation() {
-      const { data, error } = await supabase
+      // Show the map for this checkpoint
+      const { data: qrdata } = await supabase
         .from("qr_adventure_data")
         .select("geotag, visible_radius")
         .eq("qr_code_id", qrId)
         .single();
 
-      if (error || !data?.geotag) {
-        console.warn("⚠️ No map location found.");
-        return;
-      }
+      if (!qrdata?.geotag) return;
 
-      const { lat, lng } = data.geotag;
-      const radius = data.visible_radius || 25;
+      const { lat, lng } = qrdata.geotag;
+      const radius = qrdata.visible_radius || 25;
 
       const map = L.map("map", {
         zoomControl: false,
@@ -121,10 +100,7 @@ if (!registrationId || !qrId) {
       L.marker([lat, lng]).addTo(map);
     }
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      await tryLogScan();
-      await loadMapLocation();
-    });
+    window.addEventListener("DOMContentLoaded", initCheckpoint);
   </script>
 </body>
 </html>
