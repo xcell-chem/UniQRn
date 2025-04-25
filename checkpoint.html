@@ -15,7 +15,7 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      max-width: 700px;
+      max-width: 600px;
       margin: 2rem auto;
     }
     #mapPreview {
@@ -23,125 +23,90 @@
       margin-top: 1rem;
       border-radius: 10px;
       overflow: hidden;
-      pointer-events: none; /* disable interaction */
     }
     h1, h2 { color: #f4c542; }
   </style>
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-
     const params = new URLSearchParams(window.location.search);
     const qrId = params.get("id");
 
-    if (!qrId) {
-      document.body.innerHTML = "<p style='color:red;'>Missing QR code ID.</p>";
-      throw new Error("Missing QR code ID");
-    }
-
-    async function loadCheckpoint() {
-      const { data, error } = await supabase
+    async function loadCheckpointAndNextMap() {
+      const { data: currentQR, error } = await supabase
         .from("qr_adventure_data")
-        .select("clue, label, geotag, visible_radius")
+        .select("*")
         .eq("qr_code_id", qrId)
         .single();
 
-      if (error || !data) {
-        document.querySelector(".card").innerHTML = "<p>Unable to load checkpoint data.</p>";
-        console.error("Supabase error:", error);
+      if (error || !currentQR) {
+        document.querySelector(".card").innerHTML = "<p>Checkpoint not found.</p>";
         return;
       }
 
-      document.getElementById("checkpointLabel").innerText = data.label;
-      document.getElementById("checkpointClue").innerText = data.clue || "No clue available.";
+      document.getElementById("checkpointLabel").innerText = currentQR.label;
+      document.getElementById("checkpointClue").innerText = currentQR.clue || "Clue not set.";
+      
+      // Get scan count
+      const { count, error: countError } = await supabase
+        .from("checkins")
+        .select("*", { count: "exact", head: true })
+        .eq("qr_code_id", qrId);
 
-      if (data.geotag?.lat && data.geotag?.lng && data.visible_radius) {
-        const center = [data.geotag.lat, data.geotag.lng];
-        const map = L.map("mapPreview", {
-          center,
-          zoom: 18,
-          dragging: false,
-          zoomControl: false,
-          scrollWheelZoom: false,
-          doubleClickZoom: false,
-          boxZoom: false,
-          touchZoom: false
-        });
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(map);
-
-        const circle = L.circle(center, {
-          radius: data.visible_radius,
-          color: "#00adb5",
-          fillColor: "#00adb5",
-          fillOpacity: 0.2
-        }).addTo(map);
-
-        L.marker(center).addTo(map);
-
-        // Restrict the map view to the bounds of the circle
-        map.fitBounds(circle.getBounds(), { maxZoom: 18 });
-      } else {
-        document.getElementById("mapPreview").innerHTML = "<p>No map location set for this checkpoint.</p>";
+      if (!countError) {
+        document.getElementById("scanCount").innerText = `This checkpoint has been scanned ${count} time${count !== 1 ? "s" : ""}.`;
       }
+
+      const { data: nextQR } = await supabase
+        .from("qr_adventure_data")
+        .select("*")
+        .eq("adventure_id", currentQR.adventure_id)
+        .gt("step_number", currentQR.step_number)
+        .order("step_number", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (!nextQR || !nextQR.geotag?.lat || !nextQR.visible_radius) {
+        document.getElementById("mapPreview").innerHTML = "<p>Next location is secret or not set yet!</p>";
+        return;
+      }
+
+      const map = L.map("mapPreview", {
+        center: [nextQR.geotag.lat, nextQR.geotag.lng],
+        zoom: 18,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        touchZoom: false,
+        zoomControl: false
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      const circle = L.circle([nextQR.geotag.lat, nextQR.geotag.lng], {
+        radius: nextQR.visible_radius,
+        color: "#00adb5",
+        fillColor: "#00adb5",
+        fillOpacity: 0.2
+      }).addTo(map);
+
+      L.marker([nextQR.geotag.lat, nextQR.geotag.lng]).addTo(map);
+      map.fitBounds(circle.getBounds(), { maxZoom: 18 });
     }
 
-    loadCheckpoint();
+    window.addEventListener("DOMContentLoaded", loadCheckpointAndNextMap);
   </script>
 </head>
 <body>
   <div class="card">
-    <h1>Checkpoint</h1>
+    <h1>🎉 Well done!</h1>
     <h2 id="checkpointLabel">Loading...</h2>
     <p id="checkpointClue"></p>
+    <p id="scanCount"></p>
     <div id="mapPreview"></div>
   </div>
-
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-
-    const params = new URLSearchParams(window.location.search);
-    const qrId = params.get("id");
-
-    async function logCheckin(registrationId) {
-      const { error } = await supabase
-        .from("checkins")
-        .insert({ registration_id: registrationId, qr_code_id: qrId });
-
-      if (error) {
-        console.warn("Check-in logging failed:", error);
-      } else {
-        console.log("✅ Check-in logged.");
-      }
-    }
-
-    async function tryLogScan() {
-      if (!qrId) return;
-
-      const registrationId = sessionStorage.getItem("registration_id");
-
-      if (!registrationId) {
-        console.warn("No registration found in session, skipping check-in logging.");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("registrations")
-        .select("id")
-        .eq("id", registrationId)
-        .single();
-
-      if (!error && data) {
-        logCheckin(data.id);
-      } else {
-        console.warn("No valid registration found.");
-      }
-    }
-
-    tryLogScan();
-  </script>
 </body>
 </html>
