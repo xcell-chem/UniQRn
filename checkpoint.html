@@ -80,9 +80,9 @@
       document.getElementById("checkpointLabel").innerText = currentQR.label;
       document.getElementById("checkpointClue").innerText = currentQR.clue || "Clue not set.";
       
-      const { count, error: countError } = await supabase
+      const { data: checkins, count, error: countError } = await supabase
         .from("checkins")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact" })
         .eq("qr_code_id", qrId);
 
       if (!countError) {
