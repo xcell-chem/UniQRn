@@ -6,6 +6,8 @@
   <title>Checkpoint</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="/env.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
     body { background: #1a1a2e; color: gold; font-family: sans-serif; padding: 2rem; text-align: center; }
     .card {
@@ -13,8 +15,14 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      max-width: 600px;
+      max-width: 700px;
       margin: 2rem auto;
+    }
+    #mapPreview {
+      height: 300px;
+      margin-top: 1rem;
+      border-radius: 10px;
+      overflow: hidden;
     }
     h1, h2 { color: #f4c542; }
   </style>
@@ -33,7 +41,7 @@
     async function loadCheckpoint() {
       const { data, error } = await supabase
         .from("qr_adventure_data")
-        .select("clue, label, geotag")
+        .select("clue, label, geotag, visible_radius")
         .eq("qr_code_id", qrId)
         .single();
 
@@ -46,10 +54,22 @@
       document.getElementById("checkpointLabel").innerText = data.label;
       document.getElementById("checkpointClue").innerText = data.clue || "No clue available.";
 
-      if (data.geotag?.lat && data.geotag?.lng) {
-        document.getElementById("locationInfo").innerText = `Location: ${data.geotag.lat.toFixed(5)}, ${data.geotag.lng.toFixed(5)}`;
+      if (data.geotag?.lat && data.geotag?.lng && data.visible_radius) {
+        const map = L.map("mapPreview").setView([data.geotag.lat, data.geotag.lng], 17);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        L.circle([data.geotag.lat, data.geotag.lng], {
+          radius: data.visible_radius,
+          color: "#00adb5",
+          fillColor: "#00adb5",
+          fillOpacity: 0.2
+        }).addTo(map);
+
+        L.marker([data.geotag.lat, data.geotag.lng]).addTo(map);
       } else {
-        document.getElementById("locationInfo").innerText = "No map location set for this checkpoint.";
+        document.getElementById("mapPreview").innerHTML = "<p>No map location set for this checkpoint.</p>";
       }
     }
 
@@ -61,7 +81,7 @@
     <h1>Checkpoint</h1>
     <h2 id="checkpointLabel">Loading...</h2>
     <p id="checkpointClue"></p>
-    <p id="locationInfo" style="margin-top: 1rem;"></p>
+    <div id="mapPreview"></div>
   </div>
 </body>
 </html>
