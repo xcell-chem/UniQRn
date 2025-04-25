@@ -119,7 +119,7 @@
         console.error(error);
       } else {
         alert("Registration complete!");
-        sessionStorage.setItem("registrationId", regData.id);
+        localStorage.setItem("registrationId", regData.id);
         window.location.href = `/checkpoint.html?id=${qrId}`;
       }
     }

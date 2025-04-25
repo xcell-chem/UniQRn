@@ -32,7 +32,7 @@
     async function initCheckpoint() {
       const urlParams = new URLSearchParams(window.location.search);
       const qrId = urlParams.get("id");
-      const registrationId = sessionStorage.getItem("registrationId");
+      const registrationId = localStorage.getItem("registrationId");
 
       console.log("📦 registrationId:", registrationId);
       console.log("📦 qrId:", qrId);
