@@ -32,6 +32,39 @@
     const params = new URLSearchParams(window.location.search);
     const qrId = params.get("id");
 
+    async function logCheckin(registrationId) {
+      console.log("📌 Logging check-in:", { registrationId, qr_code_id: qrId });
+      const { error, data } = await supabase
+        .from("checkins")
+        .insert({ registration_id: registrationId, qr_code_id: qrId });
+
+      if (error) {
+        console.warn("Check-in logging failed:", error);
+      } else {
+        console.log("✅ Check-in logged:", data);
+      }
+    }
+
+    async function tryLogScan() {
+      const registrationId = sessionStorage.getItem("registration_id");
+      if (!registrationId || !qrId) {
+        console.warn("Missing registration or qr ID");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("registrations")
+        .select("id")
+        .eq("id", registrationId)
+        .single();
+
+      if (!error && data) {
+        await logCheckin(data.id);
+      } else {
+        console.warn("No valid registration found.");
+      }
+    }
+
     async function loadCheckpointAndNextMap() {
       const { data: currentQR, error } = await supabase
         .from("qr_adventure_data")
@@ -47,7 +80,6 @@
       document.getElementById("checkpointLabel").innerText = currentQR.label;
       document.getElementById("checkpointClue").innerText = currentQR.clue || "Clue not set.";
       
-      // Get scan count
       const { count, error: countError } = await supabase
         .from("checkins")
         .select("*", { count: "exact", head: true })
@@ -97,7 +129,10 @@
       map.fitBounds(circle.getBounds(), { maxZoom: 18 });
     }
 
-    window.addEventListener("DOMContentLoaded", loadCheckpointAndNextMap);
+    window.addEventListener("DOMContentLoaded", () => {
+      tryLogScan();
+      loadCheckpointAndNextMap();
+    });
   </script>
 </head>
 <body>
