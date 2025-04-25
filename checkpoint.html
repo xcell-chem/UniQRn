@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Checkpoint</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="/env.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<title>Checkpoint</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/env.js"></script>
+<style>
     body { background: #1a1a2e; color: gold; font-family: sans-serif; padding: 2rem; text-align: center; }
     .card {
       background: #0f172a;
@@ -18,7 +19,7 @@
     }
     h1, h2 { color: #f4c542; }
   </style>
-  <script type="module">
+<script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
@@ -57,11 +58,11 @@
   </script>
 </head>
 <body>
-  <div class="card">
-    <h1>Checkpoint</h1>
-    <h2 id="checkpointLabel">Loading...</h2>
-    <p id="checkpointClue"></p>
-    <p id="locationInfo" style="margin-top: 1rem;"></p>
-  </div>
+<div class="card">
+<h1>Checkpoint</h1>
+<h2 id="checkpointLabel">Loading...</h2>
+<p id="checkpointClue"></p>
+<p id="locationInfo" style="margin-top: 1rem;"></p>
+</div>
 </body>
 </html>

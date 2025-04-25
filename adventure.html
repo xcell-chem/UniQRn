@@ -52,7 +52,7 @@
         return;
       }
 
-      qrList.innerHTML = qrs.map(qr => {
+      qrList.innerHTML = qrs.sort((a, b) => a.step_number - b.step_number).map(qr => {
         const mapImg = qr.geotag?.lat && qr.geotag?.lng
           ? `<img src="https://maps.geoapify.com/v1/staticmap?style=osm-carto&width=200&height=200&center=lonlat:${qr.geotag.lng},${qr.geotag.lat}&zoom=17&marker=lonlat:${qr.geotag.lng},${qr.geotag.lat};type:material;color:%2300adb5;size:medium&apiKey=2c0c734d344b4704b1cd8c16a9e64d55" alt="Map preview" style="border-radius: 8px;">`
           : `<p style="color: #888;">No location</p>`;
