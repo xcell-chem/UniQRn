@@ -23,6 +23,7 @@
       margin-top: 1rem;
       border-radius: 10px;
       overflow: hidden;
+      pointer-events: none; /* disable interaction */
     }
     h1, h2 { color: #f4c542; }
   </style>
@@ -55,19 +56,33 @@
       document.getElementById("checkpointClue").innerText = data.clue || "No clue available.";
 
       if (data.geotag?.lat && data.geotag?.lng && data.visible_radius) {
-        const map = L.map("mapPreview").setView([data.geotag.lat, data.geotag.lng], 17);
+        const center = [data.geotag.lat, data.geotag.lng];
+        const map = L.map("mapPreview", {
+          center,
+          zoom: 18,
+          dragging: false,
+          zoomControl: false,
+          scrollWheelZoom: false,
+          doubleClickZoom: false,
+          boxZoom: false,
+          touchZoom: false
+        });
+
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
 
-        L.circle([data.geotag.lat, data.geotag.lng], {
+        const circle = L.circle(center, {
           radius: data.visible_radius,
           color: "#00adb5",
           fillColor: "#00adb5",
           fillOpacity: 0.2
         }).addTo(map);
 
-        L.marker([data.geotag.lat, data.geotag.lng]).addTo(map);
+        L.marker(center).addTo(map);
+
+        // Restrict the map view to the bounds of the circle
+        map.fitBounds(circle.getBounds(), { maxZoom: 18 });
       } else {
         document.getElementById("mapPreview").innerHTML = "<p>No map location set for this checkpoint.</p>";
       }
