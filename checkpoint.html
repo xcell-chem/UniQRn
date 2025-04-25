@@ -47,11 +47,7 @@
       }
 
       // Log the check-in
-      await supabase.from("checkins").insert({
-        user_id: registrationId,
-        qr_code_id: qrId,
-        notes: "checkpoint scan"
-      });
+      await supabase.from("checkins").insert({ user_id: registrationId, qr_code_id: qrId, notes: "checkpoint scan" });
 
       // Get scan count
       const { data: checkins } = await supabase
