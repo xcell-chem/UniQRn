@@ -22,10 +22,10 @@
       throw new Error("Missing QR ID");
     }
 
-    async function checkQR() {
+    async function handleScan() {
       const { data, error } = await supabase
         .from("qr_adventure_data")
-        .select("label")
+        .select("label, geotag")
         .eq("qr_code_id", qrId)
         .single();
 
@@ -36,15 +36,21 @@
       }
 
       const label = data.label;
+      const isGeotagged = data.geotag && typeof data.geotag.lat === "number" && typeof data.geotag.lng === "number";
 
-      if (label === "start") {
+      if (!isGeotagged) {
+        // No geotag yet → setup mode
+        window.location.href = `/qr-setup.html?id=${qrId}`;
+      } else if (label === "start") {
+        // Start QR → registration
         window.location.href = `/register.html?id=${qrId}`;
       } else {
+        // All others → checkpoint
         window.location.href = `/checkpoint.html?id=${qrId}`;
       }
     }
 
-    checkQR();
+    handleScan();
   </script>
 </head>
 <body>
