@@ -1,95 +1,137 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>User Registration | UniQRn</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Load Supabase client from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <title>Register for Adventure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="/env.js"></script>
-  <script src="/supabaseClient.js"></script>
-</head>
-<body>
-  <div id="header"></div>
-  <div class="container center-form">
-  <h1 class="homepage-text">Register Your Account</h1>
-  <form id="registrationForm">
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit" id="registerButton">Register</button>
-  </form>
-  </div>
+  <style>
+    body { background: #1a1a2e; color: gold; font-family: sans-serif; padding: 2rem; text-align: center; }
+    .card {
+      background: #0f172a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      margin-top: 0.25rem;
+    }
+    button {
+      margin-top: 2rem;
+      background-color: #00adb5;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-  <script>
-    // Utility to parse cookies (if needed for referral, etc.)
-    function parseCookies() {
-      return document.cookie.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.split('=').map(c => c.trim());
-        acc[key] = value;
-        return acc;
-      }, {});
+    const params = new URLSearchParams(window.location.search);
+    const qrId = params.get("id");
+
+    let adventureId = null;
+
+    if (!qrId) {
+      document.body.innerHTML = "<p style='color:red;'>Missing QR ID.</p>";
+      throw new Error("Missing QR ID");
     }
 
-    async function registerUser(event) {
-      event.preventDefault();
-      
-      console.log('[registration] Starting registration process.');
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      console.log('[registration] Email:', email);
+    async function loadForm() {
+      // Lookup the adventure_id from qr_adventure_data
+      const { data: qrData, error: qrErr } = await supabase
+        .from("qr_adventure_data")
+        .select("adventure_id")
+        .eq("qr_code_id", qrId)
+        .single();
 
-      const cookies = parseCookies();
-      const referralUserId = cookies.referral_user || null;
-      if (referralUserId) {
-        console.log('[registration] Found referral cookie:', referralUserId);
-      } else {
-        console.log('[registration] No referral cookie found.');
-      }
-
-      // Sign up using Supabase auth
-      const { data, error } = await supabaseClient.auth.signUp({ email, password });
-      if (error) {
-        console.error('[registration] Registration error:', error);
-        alert("Registration failed: " + error.message);
+      if (qrErr || !qrData?.adventure_id) {
+        document.body.innerHTML = "<p>Failed to fetch adventure.</p>";
         return;
       }
-      console.log('[registration] Registration successful:', data);
 
-      // Optionally update user record with referral info if desired.
-      if (data.user && referralUserId) {
-        console.log('[registration] Updating user record with parent_id:', referralUserId);
-        const { error: updateError } = await supabaseClient
-          .from('app_users')
-          .update({ parent_id: referralUserId })
-          .eq('id', data.user.id);
-        if (updateError) {
-          console.error('[registration] Error updating parent_id:', updateError);
-        } else {
-          console.log('[registration] User parent_id updated successfully.');
-        }
+      adventureId = qrData.adventure_id;
+
+      const { data: adventure, error: advErr } = await supabase
+        .from("adventures")
+        .select("title, registration_fields")
+        .eq("id", adventureId)
+        .single();
+
+      if (advErr || !adventure) {
+        document.body.innerHTML = "<p>Adventure not found.</p>";
+        return;
       }
-      alert('Registration successful!');
 
-      // Wait a moment for session to be available
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Retrieve the session
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session && session.user) {
-        const token = session.user.id;
-        const user_id = session.user.id;
-        const balance = 100.0; // Replace with real balance retrieval if available.
-        // Redirect to login_callback.html with query parameters
-        const redirectUrl = window.location.origin + "/login_callback.html?token=" 
-                            + encodeURIComponent(token) +
-                            "&user_id=" + encodeURIComponent(user_id) +
-                            "&balance=" + encodeURIComponent(balance);
-        window.location.replace(redirectUrl);
+      document.getElementById("title").innerText = `Register for ${adventure.title}`;
+      const fields = adventure.registration_fields || [];
+
+      const form = document.getElementById("registrationForm");
+
+      fields.forEach(field => {
+        const label = document.createElement("label");
+        label.textContent = field.charAt(0).toUpperCase() + field.slice(1);
+        const input = document.createElement("input");
+        input.name = field;
+        input.required = true;
+        form.appendChild(label);
+        form.appendChild(input);
+      });
+
+      const button = document.createElement("button");
+      button.type = "submit";
+      button.textContent = "Submit Registration";
+      form.appendChild(button);
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = {
+        adventure_id: adventureId,
+        qr_code_id: qrId,
+        data: Object.fromEntries(formData),
+        timestamp: new Date().toISOString()
+      };
+
+      const { error } = await supabase.from("registrations").insert(payload);
+      if (error) {
+        alert("Failed to save registration.");
+        console.error(error);
       } else {
-        alert("Could not retrieve session after registration.");
+        alert("Registration complete!");
+        window.location.href = `/checkpoint.html?id=${qrId}`;
       }
     }
 
-    document.getElementById('registrationForm').addEventListener('submit', registerUser);
+    window.addEventListener("DOMContentLoaded", () => {
+      loadForm();
+      document.getElementById("registrationForm").addEventListener("submit", handleSubmit);
+    });
   </script>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">Loading...</h1>
+    <form id="registrationForm"></form>
+  </div>
 </body>
 </html>

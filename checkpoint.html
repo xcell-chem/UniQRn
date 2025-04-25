@@ -26,7 +26,15 @@
       pointer-events: none; /* disable interaction */
     }
     h1, h2 { color: #f4c542; }
-  </style>
+  
+@media (min-width: 768px) {
+  #mapPreview {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+</style>
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);

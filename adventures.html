@@ -3,123 +3,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UniQRn Adventures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="/style.css" rel="stylesheet" />
   <script src="/env.js"></script>
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
-      auth: {
-        persistSession: true,
-        detectSessionInUrl: true
-      }
-    });
-
-    const descriptions = {
-      orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
-      easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
-      treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
-      qrGo: "Direction and distance only — find your way using compass navigation style."
-    };
-
-    window.showOptions = function() {
-      const type = document.getElementById('adventureType').value;
-      const description = document.getElementById('typeDescription');
-      description.innerText = descriptions[type] || '';
-    };
-
-    window.submitAdventure = async function () {
-      const title = document.getElementById('adventureTitle').value.trim();
-      const description = document.getElementById('adventureDescription').value.trim();
-      const type = document.getElementById('adventureType').value;
-      const numQRCodes = parseInt(document.getElementById('qrCount').value);
-
-      if (!title || !type || isNaN(numQRCodes) || numQRCodes < 1) {
-        alert("Please enter all required fields and a valid number of QR codes.");
-        return;
-      }
-
-      let { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
-        const popup = window.open('/login.html', 'LoginPopup', 'width=500,height=600');
-        const checkLogin = setInterval(async () => {
-          const session = await supabase.auth.getSession();
-          if (session?.session?.user?.id) {
-            clearInterval(checkLogin);
-            popup?.close();
-            proceedAdventureCreation(session.session.user.id, title, description, type, numQRCodes);
-          }
-        }, 1000);
-        return;
-      }
-
-      proceedAdventureCreation(sessionData.session.user.id, title, description, type, numQRCodes);
-    }
-
-    async function proceedAdventureCreation(userId, title, description, type, qrCount) {
-      const { data: adventure, error } = await supabase
-        .from('adventures')
-        .insert({ title, description, adventure_type: type, created_by: userId })
-        .select()
-        .single();
-
-      if (error || !adventure) {
-        alert("Failed to create adventure.");
-        return;
-      }
-
-      // QR logic replaced by dynamic insert above
-
-      
-      const qrCodeEntries = [];
-
-      for (let i = 0; i <= qrCount + 1; i++) {
-        const { data: qrCode, error: qrCodeError } = await supabase
-          .from('qr_codes')
-          .insert({})
-          .select()
-          .single();
-
-        if (qrCodeError || !qrCode) {
-          console.error("QR code creation failed", qrCodeError);
-          alert("Failed to create QR code.");
-          return;
-        }
-
-        const step = i === 0 ? 0 : i === qrCount + 1 ? qrCount + 1 : i;
-        const label = i === 0 ? 'start' : i === qrCount + 1 ? 'finish' : `step-${i}`;
-
-        qrCodeEntries.push({
-          adventure_id: adventure.id,
-          step_number: step,
-          qr_code_id: qrCode.id,
-          clue: i === 0 ? 'Welcome! Scan to start.' :
-                i === qrCount + 1 ? 'Scan to finish and see leaderboard!' : '',
-          label,
-          geotag: {}
-        });
-      }
-
-      const { error: qrError } = await supabase
-        .from('qr_adventure_data')
-        .insert(qrCodeEntries).select();
-
-      console.log("Final QR entries to insert into qr_adventure_data:", qrCodeEntries);
-      if (qrError) {
-        console.error("QR insert error details:", qrError);
-      }
-    
-
-      if (qrError) {
-        alert("Adventure created but failed to generate QR codes.");
-      }
-
-      
-
-      window.location.href = "/my-adventures.html";
-    }
-  </script>
   <style>
     body { background: #1a1a2e; color: gold; font-family: 'Segoe UI', sans-serif; padding: 2rem; text-align: center; }
     h1 { font-size: 2.5rem; margin-bottom: 1rem; }
@@ -142,14 +29,106 @@
     .type-description {
       margin-top: 1rem; font-style: italic; color: #f0e68c;
     }
+    .field-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
   </style>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+    const descriptions = {
+      orienteering: "Visit all checkpoints in a fixed order, ideal for classic field courses.",
+      easterEgg: "Find scattered hidden QR codes in any order, like a real egg hunt!",
+      treasureHunt: "Solve clues to uncover the next location and ultimately reach the treasure.",
+      qrGo: "Direction and distance only — find your way using compass navigation style."
+    };
+
+    window.showOptions = function () {
+      const type = document.getElementById('adventureType').value;
+      const description = document.getElementById('typeDescription');
+      description.innerText = descriptions[type] || '';
+    };
+
+    window.submitAdventure = async function () {
+      const title = document.getElementById('adventureTitle').value.trim();
+      const description = document.getElementById('adventureDescription').value.trim();
+      const type = document.getElementById('adventureType').value;
+      const numQRCodes = parseInt(document.getElementById('qrCount').value);
+      const fields = Array.from(document.querySelectorAll("input[name='fields']:checked")).map(f => f.value);
+
+      if (!title || !type || isNaN(numQRCodes) || numQRCodes < 1) {
+        alert("Please enter all required fields and a valid number of QR codes.");
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+
+      if (!userId) {
+        alert("You must be logged in to create an adventure.");
+        return;
+      }
+
+      const { data: adventure, error } = await supabase
+        .from("adventures")
+        .insert({
+          title,
+          description,
+          adventure_type: type,
+          created_by: userId,
+          registration_fields: fields
+        })
+        .select()
+        .single();
+
+      if (error || !adventure) {
+        alert("Failed to create adventure.");
+        return;
+      }
+
+      const qrEntries = [];
+      for (let i = 0; i <= numQRCodes + 1; i++) {
+        const { data: qrCode, error: qrCodeError } = await supabase
+          .from("qr_codes")
+          .insert({})
+          .select()
+          .single();
+
+        if (qrCodeError || !qrCode) {
+          alert("Failed to create QR code.");
+          return;
+        }
+
+        qrEntries.push({
+          adventure_id: adventure.id,
+          step_number: i,
+          qr_code_id: qrCode.id,
+          clue: i === 0 ? "Welcome! Scan to start." :
+                i === numQRCodes + 1 ? "Scan to finish and see leaderboard!" : '',
+          label: i === 0 ? "start" : i === numQRCodes + 1 ? "finish" : `step-${i}`,
+          geotag: {}
+        });
+      }
+
+      const { error: qrInsertError } = await supabase
+        .from("qr_adventure_data")
+        .insert(qrEntries);
+
+      if (qrInsertError) {
+        alert("QR creation failed.");
+      }
+
+      window.location.href = "/my-adventures.html";
+    };
+  </script>
 </head>
 <body>
   <h1>Design Your Adventure</h1>
-  <p>
-    Use this tool to create location-based experiences for orienteering, treasure hunts,
-    learning trails and more. Perfect for schools, charities, and events.
-  </p>
+  <p>Create orienteering trails, hunts, or challenges. Add custom registration fields below for participants.</p>
   <div class="form-container">
     <label for="adventureTitle">Adventure Title:</label>
     <input id="adventureTitle" type="text" placeholder="e.g. Woodland Trail for Year 6">
@@ -169,6 +148,15 @@
 
     <label for="qrCount">How many QR checkpoints (excluding Start/Finish)?</label>
     <input id="qrCount" type="number" min="1" placeholder="e.g. 5">
+
+    <label>Registration Fields to Collect:</label>
+    <div class="field-options">
+      <label><input type="checkbox" name="fields" value="name" checked> Name</label>
+      <label><input type="checkbox" name="fields" value="team"> Team</label>
+      <label><input type="checkbox" name="fields" value="age"> Age</label>
+      <label><input type="checkbox" name="fields" value="school"> School</label>
+      <label><input type="checkbox" name="fields" value="email"> Email</label>
+    </div>
 
     <button onclick="submitAdventure()">Create Adventure</button>
   </div>
