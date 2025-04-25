@@ -38,14 +38,26 @@
     const qrId = urlParams.get("id");
     const registrationId = sessionStorage.getItem("registrationId");
 
-    if (!registrationId || !qrId) {
+    
+if (!registrationId || !qrId) {
+  console.warn("🚨 registrationId or qrId is missing");
+  console.log("📦 registrationId:", registrationId);
+  console.log("📦 qrId:", qrId);
+
       console.warn("Missing registration or qr ID");
       document.getElementById("qrContent").innerHTML = `
         <div class="info-box" style="background: #332;">
           <h3>⛔ You need to register first</h3>
           <p>Please scan the start QR code to register before continuing this adventure.</p>
         </div>`;
-      throw new Error("Missing registration or qr ID");
+      
+  document.getElementById("qrContent").innerHTML = `
+    <div class="info-box" style="background:#332; padding:1rem; border-radius:8px;">
+      <h3>⛔ Missing registration or QR code ID</h3>
+      <p>Please start the adventure by scanning the start QR code to register first.</p>
+    </div>`;
+  return;
+
     }
 
     async function tryLogScan() {
