@@ -86,7 +86,8 @@
         .eq("qr_code_id", qrId);
 
       if (!countError) {
-        document.getElementById("scanCount").innerText = `This checkpoint has been scanned ${count} time${count !== 1 ? "s" : ""}.`;
+        console.log("✅ Check-in count:", count, "| Records:", checkins);
+      document.getElementById("scanCount").innerText = `This checkpoint has been scanned ${count ?? "?"} time${count !== 1 ? "s" : ""}.`;
       }
 
       const { data: nextQR } = await supabase
