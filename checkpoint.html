@@ -49,7 +49,7 @@
       // Log the check-in
       await supabase.from("checkins").insert({
         user_id: registrationId,
-        location: qrId,
+        qr_code_id: qrId,
         notes: "checkpoint scan"
       });
 
@@ -57,7 +57,7 @@
       const { data: checkins } = await supabase
         .from("checkins")
         .select("*")
-        .eq("location", qrId);
+        .eq("qr_code_id", qrId);
 
       document.getElementById("scanStats").innerHTML = `
         <h3>🎉 Well done!</h3>
