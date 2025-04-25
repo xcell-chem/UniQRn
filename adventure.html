@@ -1,13 +1,14 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adventure Details</title>
-  <link rel="stylesheet" href="/style.css" />
-  <script src="/env.js"></script>
-  <script type="module">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Adventure Details</title>
+<link href="/style.css" rel="stylesheet"/>
+<script src="/env.js"></script>
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
@@ -63,7 +64,7 @@
             <div><strong>Radius:</strong> ${qr.visible_radius || 'N/A'}m</div>
             <div><strong>Geo:</strong> ${qr.geotag ? JSON.stringify(qr.geotag) : 'Not set'}</div>
             <div style="display: flex; flex-direction: row; justify-content: space-evenly; align-items: center; gap: 1rem;">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qr.qr_code_id)}" alt="QR Preview">
+              <a href="/adventure-scan.html?id=${encodeURIComponent(qr.qr_code_id)}" target="_blank"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qr.qr_code_id)}" alt="QR Preview"></a>
               ${mapImg}
             </div>
           </div>
@@ -73,7 +74,7 @@
 
     window.addEventListener('DOMContentLoaded', loadAdventure);
   </script>
-  <style>
+<style>
     body {
       background-color: #1a1a2e;
       color: gold;
@@ -109,19 +110,17 @@
   </style>
 </head>
 <body>
-  <h1 id="adventureTitle">Adventure Name</h1>
-  <h2>Type: <span id="adventureType"></span></h2>
-  <p id="adventureDescription"></p>
-
-  <div class="button-bar">
-    <button onclick="window.print()">🖨 Print</button>
-    <button onclick="alert('Order feature coming soon')">🛒 Order</button>
-    <button onclick="alert('Save changes coming soon')">💾 Save</button>
-  </div>
-
-  <div id="content">
-    <h2>Checkpoints & QR Codes</h2>
-    <div id="qrList"></div>
-  </div>
+<h1 id="adventureTitle">Adventure Name</h1>
+<h2>Type: <span id="adventureType"></span></h2>
+<p id="adventureDescription"></p>
+<div class="button-bar">
+<button onclick="window.print()">🖨 Print</button>
+<button onclick="alert('Order feature coming soon')">🛒 Order</button>
+<button onclick="alert('Save changes coming soon')">💾 Save</button>
+</div>
+<div id="content">
+<h2>Checkpoints &amp; QR Codes</h2>
+<div id="qrList"></div>
+</div>
 </body>
 </html>
